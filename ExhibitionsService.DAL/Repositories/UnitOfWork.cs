@@ -7,6 +7,7 @@ namespace ExhibitionsService.DAL.Repositories
     {
         private readonly ExhibitionContext db;
         private UserProfileRepository UserProfileRepository;
+        private PainterRepository PainterRepository;
 
         public UnitOfWork(ExhibitionContext context)
         {
@@ -19,6 +20,15 @@ namespace ExhibitionsService.DAL.Repositories
             {
                 UserProfileRepository ??= new UserProfileRepository(db);
                 return UserProfileRepository;
+            }
+        }
+
+        public IPainterRepository Painters
+        {
+            get
+            {
+                PainterRepository ??= new PainterRepository(db);
+                return PainterRepository;
             }
         }
 

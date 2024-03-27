@@ -9,5 +9,7 @@
 
         public int UserId { get; set; }
         public User User { get; set; }
+
+        public Painter? Painter { get; set; }
     }
 }

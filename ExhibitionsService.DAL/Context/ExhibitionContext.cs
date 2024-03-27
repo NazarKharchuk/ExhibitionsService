@@ -12,7 +12,7 @@ namespace ExhibitionsService.DAL.Context
         public ExhibitionContext(DbContextOptions<ExhibitionContext> options): base(options)
         {
             //Database.EnsureDeleted();
-            //Database.EnsureCreated();
+            Database.EnsureCreated();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -28,8 +28,29 @@ namespace ExhibitionsService.DAL.Context
 
             modelBuilder.Entity<UserProfile>(builder =>
             {
-                builder.ToTable("UserProfiles").HasKey(x => x.ProfileId);
-                builder.Property(x => x.ProfileId).ValueGeneratedOnAdd();
+                builder.ToTable("UserProfiles").HasKey(up => up.ProfileId);
+                builder.Property(up => up.ProfileId).ValueGeneratedOnAdd();
+                builder.Property(up => up.FirstName).IsRequired().HasMaxLength(20);
+                builder.Property(up => up.LastName).HasMaxLength(20);
+                builder.Property(up => up.JoiningDate).IsRequired();
+
+                /*builder.HasOne(up => up.Painter)
+                    .WithOne(p => p.UserProfile)
+                    .HasForeignKey<Painter>(p => p.ProfileId)
+                    .IsRequired(false);*/
+            });
+
+            modelBuilder.Entity<Painter>(builder =>
+            {
+                builder.ToTable("Painters").HasKey(p => p.PainterId);
+                builder.Property(p => p.PainterId).ValueGeneratedOnAdd();
+                builder.Property(p => p.Description).IsRequired().HasMaxLength(500);
+                builder.Property(p => p.Pseudonym).IsRequired().HasMaxLength(20);
+
+                builder.HasOne(p => p.UserProfile)
+                    .WithOne(up => up.Painter)
+                    .HasForeignKey<Painter>(p => p.ProfileId)
+                    .IsRequired();
             });
         }
     }
