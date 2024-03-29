@@ -1,5 +1,6 @@
 ﻿using ExhibitionsService.DAL.Context;
 using ExhibitionsService.DAL.Interfaces;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace ExhibitionsService.DAL.Repositories
 {
@@ -30,6 +31,11 @@ namespace ExhibitionsService.DAL.Repositories
                 PainterRepository ??= new PainterRepository(db);
                 return PainterRepository;
             }
+        }
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        {
+            return await db.Database.BeginTransactionAsync();
         }
 
         public async Task SaveAsync()

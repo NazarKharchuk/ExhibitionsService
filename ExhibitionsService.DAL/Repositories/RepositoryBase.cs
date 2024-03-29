@@ -15,14 +15,12 @@ namespace ExhibitionsService.DAL.Repositories
         public virtual async Task<T> CreateAsync(T entity)
         {
             await db.Set<T>().AddAsync(entity);
-            await db.SaveChangesAsync();
             return entity;
         }
 
         public virtual async Task<T> UpdateAsync(T entity)
         {
             db.Set<T>().Update(entity);
-            await db.SaveChangesAsync();
             return entity;
         }
 
