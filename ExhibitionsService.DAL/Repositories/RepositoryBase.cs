@@ -1,5 +1,6 @@
 ﻿using ExhibitionsService.DAL.Context;
 using ExhibitionsService.DAL.Interfaces;
+using System.Linq.Expressions;
 
 namespace ExhibitionsService.DAL.Repositories
 {
@@ -38,6 +39,11 @@ namespace ExhibitionsService.DAL.Repositories
         public virtual async Task<IQueryable<T>> GetAllAsync()
         {
             return db.Set<T>().AsQueryable();
+        }
+
+        public virtual async Task<IQueryable<T>> FindAsync(Func<T, bool> predicate)
+        {
+            return db.Set<T>().Where(predicate).AsQueryable();
         }
     }
 }

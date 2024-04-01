@@ -8,6 +8,8 @@ namespace ExhibitionsService.DAL.Context
     public class ExhibitionContext : IdentityDbContext<User, IdentityRole<int>, int>
     {
         public DbSet<UserProfile> UserProfiles { get; set; }
+        public DbSet<Painter> Painters { get; set; }
+        public DbSet<Tag> Tags { get; set; }
 
         public ExhibitionContext(DbContextOptions<ExhibitionContext> options): base(options)
         {
@@ -46,11 +48,21 @@ namespace ExhibitionsService.DAL.Context
                 builder.Property(p => p.PainterId).ValueGeneratedOnAdd();
                 builder.Property(p => p.Description).IsRequired().HasMaxLength(500);
                 builder.Property(p => p.Pseudonym).IsRequired().HasMaxLength(20);
+                builder.HasIndex(p => p.Pseudonym).IsUnique();
 
                 builder.HasOne(p => p.UserProfile)
                     .WithOne(up => up.Painter)
                     .HasForeignKey<Painter>(p => p.ProfileId)
                     .IsRequired();
+            });
+
+            modelBuilder.Entity<Tag>(builder =>
+            {
+                builder.ToTable("Tags").HasKey(t => t.TagId);
+                builder.Property(t => t.TagId).ValueGeneratedOnAdd();
+                builder.Property(t => t.TagName).IsRequired().HasMaxLength(20);
+                builder.HasIndex(t => t.TagName).IsUnique();
+
             });
         }
     }

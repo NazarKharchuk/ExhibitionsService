@@ -1,4 +1,6 @@
-﻿namespace ExhibitionsService.DAL.Interfaces
+﻿using System.Linq.Expressions;
+
+namespace ExhibitionsService.DAL.Interfaces
 {
     public interface IRepository<T> where T : class
     {
@@ -7,5 +9,6 @@
         Task DeleteAsync(int id);
         Task<T?> GetByIdAsync(int id);
         Task<IQueryable<T>> GetAllAsync();
+        Task<IQueryable<T>> FindAsync(Func<T, bool> predicate);
     }
 }

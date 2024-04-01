@@ -9,6 +9,7 @@ namespace ExhibitionsService.DAL.Repositories
         private readonly ExhibitionContext db;
         private UserProfileRepository UserProfileRepository;
         private PainterRepository PainterRepository;
+        private TagRepository TagRepository;
 
         public UnitOfWork(ExhibitionContext context)
         {
@@ -30,6 +31,15 @@ namespace ExhibitionsService.DAL.Repositories
             {
                 PainterRepository ??= new PainterRepository(db);
                 return PainterRepository;
+            }
+        }
+
+        public ITagRepository Tags
+        {
+            get
+            {
+                TagRepository ??= new TagRepository(db);
+                return TagRepository;
             }
         }
 
