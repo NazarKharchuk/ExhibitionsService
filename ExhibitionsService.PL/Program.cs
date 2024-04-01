@@ -6,6 +6,8 @@ using ExhibitionsService.DAL.Context;
 using ExhibitionsService.DAL.Entities;
 using ExhibitionsService.DAL.Interfaces;
 using ExhibitionsService.DAL.Repositories;
+using ExhibitionsService.PL.Mapping.Painter;
+
 //using ExhibitionsService.PL.Middlewares;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -39,6 +41,7 @@ namespace ExhibitionsService.PL
             builder.Services.AddAutoMapper(typeof(PainterProfile));
 
             // PL
+            builder.Services.AddAutoMapper(typeof(PainterModelsProfiles));
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
