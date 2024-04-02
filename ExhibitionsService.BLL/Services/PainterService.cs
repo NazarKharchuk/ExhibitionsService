@@ -21,11 +21,7 @@ namespace ExhibitionsService.BLL.Services
 
         public async Task CreateAsync(PainterDTO entity)
         {
-            if (entity.Description.IsNullOrEmpty() || entity.Description.Length > 500)
-                throw new ValidationException(entity.GetType().Name, nameof(entity.Description));
-
-            if (entity.Pseudonym.IsNullOrEmpty() || entity.Pseudonym.Length > 20)
-                throw new ValidationException(entity.GetType().Name, nameof(entity.Pseudonym));
+            ValidateEntity(entity);
 
             if (await uow.UserProfiles.GetByIdAsync(entity.ProfileId) == null)
                 throw new ValidationException(entity.GetType().Name, nameof(entity.ProfileId), "Профіль користувача з вказаним Id не існує");
@@ -39,17 +35,9 @@ namespace ExhibitionsService.BLL.Services
 
         public async Task<PainterDTO> UpdateAsync(PainterDTO entity)
         {
-            if (entity.Description.IsNullOrEmpty() || entity.Description.Length > 500)
-                throw new ValidationException(entity.GetType().Name, nameof(entity.Description));
+            ValidateEntity(entity);
 
-            if (entity.Pseudonym.IsNullOrEmpty() || entity.Pseudonym.Length > 20)
-                throw new ValidationException(entity.GetType().Name, nameof(entity.Pseudonym));
-
-            if (await uow.UserProfiles.GetByIdAsync(entity.ProfileId) == null)
-                throw new ValidationException(entity.GetType().Name, nameof(entity.ProfileId), "Профіль користувача з вказаним Id не існує");
-
-            var existingEntity = await uow.Painters.GetByIdAsync(entity.PainterId);
-            if (existingEntity == null) throw new EntityNotFoundException(entity.GetType().Name, entity.PainterId);
+            var existingEntity = await CheckEntityPresence(entity.PainterId);
 
             existingEntity.Description = entity.Description;
             existingEntity.Pseudonym = entity.Pseudonym;
@@ -62,8 +50,7 @@ namespace ExhibitionsService.BLL.Services
 
         public async Task DeleteAsync(int id)
         {
-            var existingEntity = await uow.Painters.GetByIdAsync(id);
-            if (existingEntity == null) throw new EntityNotFoundException(typeof(PainterDTO).Name, id);
+            var existingEntity = await CheckEntityPresence(id);
 
             await uow.Painters.DeleteAsync(id);
             await uow.SaveAsync();
@@ -71,8 +58,7 @@ namespace ExhibitionsService.BLL.Services
 
         public async Task<PainterDTO?> GetByIdAsync(int id)
         {
-            var existingEntity = await uow.Painters.GetByIdAsync(id);
-            if (existingEntity == null) throw new EntityNotFoundException(typeof(PainterDTO).Name, id);
+            var existingEntity = await CheckEntityPresence(id);
 
             return mapper.Map<PainterDTO>(existingEntity);
         }
@@ -85,6 +71,23 @@ namespace ExhibitionsService.BLL.Services
         public void Dispose()
         {
             uow.Dispose();
+        }
+
+        private void ValidateEntity(PainterDTO entity)
+        {
+            if (entity.Description.IsNullOrEmpty() || entity.Description.Length > 500)
+                throw new ValidationException(entity.GetType().Name, nameof(entity.Description));
+
+            if (entity.Pseudonym.IsNullOrEmpty() || entity.Pseudonym.Length > 20)
+                throw new ValidationException(entity.GetType().Name, nameof(entity.Pseudonym));
+        }
+
+        private async Task<Painter?> CheckEntityPresence(int id)
+        {
+            Painter? existingEntity = await uow.Painters.GetByIdAsync(id);
+            if (existingEntity == null) throw new EntityNotFoundException(typeof(PainterDTO).Name, id);
+
+            return existingEntity;
         }
     }
 }

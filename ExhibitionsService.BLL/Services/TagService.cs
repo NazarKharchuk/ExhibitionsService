@@ -21,11 +21,7 @@ namespace ExhibitionsService.BLL.Services
 
         public async Task CreateAsync(TagDTO entity)
         {
-            if (entity.TagName.IsNullOrEmpty() || entity.TagName.Length > 20)
-                throw new ValidationException(entity.GetType().Name, nameof(entity.TagName));
-
-            if ((await uow.Tags.FindAsync(t => t.TagName.Trim().ToLower().Equals(entity.TagName.Trim().ToLower()))).Any())
-                throw new ValidationException(entity.GetType().Name, nameof(entity.TagName), "Тег повинен бути унікальним.");
+            await ValidateEntityAsync(entity);
 
             entity.TagId = 0;
             await uow.Tags.CreateAsync(mapper.Map<Tag>(entity));
@@ -34,14 +30,9 @@ namespace ExhibitionsService.BLL.Services
 
         public async Task<TagDTO> UpdateAsync(TagDTO entity)
         {
-            if (entity.TagName.IsNullOrEmpty() || entity.TagName.Length > 20)
-                throw new ValidationException(entity.GetType().Name, nameof(entity.TagName));
+            await ValidateEntityAsync(entity);
 
-            if ((await uow.Tags.FindAsync(t => t.TagName.Trim().ToLower().Equals(entity.TagName.Trim().ToLower()))).Any())
-                throw new ValidationException(entity.GetType().Name, nameof(entity.TagName), "Тег повинен бути унікальним.");
-
-            var existingEntity = await uow.Tags.GetByIdAsync(entity.TagId);
-            if (existingEntity == null) throw new EntityNotFoundException(entity.GetType().Name, entity.TagId);
+            var existingEntity = await CheckEntityPresence(entity.TagId);
 
             existingEntity.TagName = entity.TagName;
 
@@ -53,8 +44,7 @@ namespace ExhibitionsService.BLL.Services
 
         public async Task DeleteAsync(int id)
         {
-            var existingEntity = await uow.Tags.GetByIdAsync(id);
-            if (existingEntity == null) throw new EntityNotFoundException(typeof(TagDTO).Name, id);
+            var existingEntity = await CheckEntityPresence(id);
 
             await uow.Tags.DeleteAsync(id);
             await uow.SaveAsync();
@@ -62,8 +52,7 @@ namespace ExhibitionsService.BLL.Services
 
         public async Task<TagDTO?> GetByIdAsync(int id)
         {
-            var existingEntity = await uow.Tags.GetByIdAsync(id);
-            if (existingEntity == null) throw new EntityNotFoundException(typeof(TagDTO).Name, id);
+            var existingEntity = await CheckEntityPresence(id);
 
             return mapper.Map<TagDTO>(existingEntity);
         }
@@ -76,6 +65,23 @@ namespace ExhibitionsService.BLL.Services
         public void Dispose()
         {
             uow.Dispose();
+        }
+
+        private async Task ValidateEntityAsync(TagDTO entity)
+        {
+            if (entity.TagName.IsNullOrEmpty() || entity.TagName.Length > 20)
+                throw new ValidationException(entity.GetType().Name, nameof(entity.TagName));
+
+            if ((await uow.Tags.FindAsync(t => t.TagName.Trim().ToLower().Equals(entity.TagName.Trim().ToLower()))).Any())
+                throw new ValidationException(entity.GetType().Name, nameof(entity.TagName), "Тег повинен бути унікальним.");
+        }
+
+        private async Task<Tag?> CheckEntityPresence(int id)
+        {
+            Tag? existingEntity = await uow.Tags.GetByIdAsync(id);
+            if (existingEntity == null) throw new EntityNotFoundException(typeof(TagDTO).Name, id);
+
+            return existingEntity;
         }
     }
 }

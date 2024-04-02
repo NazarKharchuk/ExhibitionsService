@@ -1,7 +1,6 @@
 ﻿using ExhibitionsService.DAL.Context;
 using ExhibitionsService.DAL.Interfaces;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace ExhibitionsService.DAL.Repositories
 {
