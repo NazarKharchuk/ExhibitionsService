@@ -7,6 +7,7 @@ using ExhibitionsService.DAL.Entities;
 using ExhibitionsService.DAL.Interfaces;
 using ExhibitionsService.DAL.Repositories;
 using ExhibitionsService.PL.Mapping.Painter;
+using ExhibitionsService.PL.Mapping.Painting;
 using ExhibitionsService.PL.Mapping.Tag;
 
 
@@ -40,11 +41,12 @@ namespace ExhibitionsService.PL
             // BLL
             builder.Services.AddScoped<IPainterService, PainterService>();
             builder.Services.AddScoped<ITagService, TagService>();
+            builder.Services.AddScoped<IPaintingService, PaintingService>();
 
-            builder.Services.AddAutoMapper(typeof(PainterProfile), typeof(TagProfile));
+            builder.Services.AddAutoMapper(typeof(PainterProfile), typeof(TagProfile), typeof(PaintingProfile));
 
             // PL
-            builder.Services.AddAutoMapper(typeof(PainterModelsProfiles), typeof(TagModelsProfiles));
+            builder.Services.AddAutoMapper(typeof(PainterModelsProfiles), typeof(TagModelsProfiles), typeof(PaintingModelsProfiles));
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -62,6 +64,7 @@ namespace ExhibitionsService.PL
             }
 
             app.UseHttpsRedirection();
+            app.UseStaticFiles();
 
             app.UseAuthorization();
 

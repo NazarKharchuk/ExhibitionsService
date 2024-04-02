@@ -1,6 +1,7 @@
 ﻿using ExhibitionsService.DAL.Context;
 using ExhibitionsService.DAL.Interfaces;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ExhibitionsService.DAL.Repositories
 {
@@ -10,6 +11,8 @@ namespace ExhibitionsService.DAL.Repositories
         private UserProfileRepository UserProfileRepository;
         private PainterRepository PainterRepository;
         private TagRepository TagRepository;
+        private PaintingRepository PaintingRepository;
+        private ImageRepository ImageRepository;
 
         public UnitOfWork(ExhibitionContext context)
         {
@@ -40,6 +43,24 @@ namespace ExhibitionsService.DAL.Repositories
             {
                 TagRepository ??= new TagRepository(db);
                 return TagRepository;
+            }
+        }
+
+        public IPaintingRepository Paintings
+        {
+            get
+            {
+                PaintingRepository ??= new PaintingRepository(db);
+                return PaintingRepository;
+            }
+        }
+
+        public IImageRepository Images
+        {
+            get
+            {
+                ImageRepository ??= new ImageRepository(Path.Combine(Environment.CurrentDirectory, "wwwroot"));
+                return ImageRepository;
             }
         }
 

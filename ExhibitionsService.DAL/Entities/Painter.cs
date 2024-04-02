@@ -8,5 +8,7 @@
 
         public int ProfileId { get; set; }
         public UserProfile UserProfile { get; set; }
+
+        public ICollection<Painting> Paintings { get; set; } = [];
     }
 }

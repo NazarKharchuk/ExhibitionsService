@@ -10,6 +10,7 @@ namespace ExhibitionsService.DAL.Context
         public DbSet<UserProfile> UserProfiles { get; set; }
         public DbSet<Painter> Painters { get; set; }
         public DbSet<Tag> Tags { get; set; }
+        public DbSet<Painting> Paintings { get; set; }
 
         public ExhibitionContext(DbContextOptions<ExhibitionContext> options): base(options)
         {
@@ -63,6 +64,23 @@ namespace ExhibitionsService.DAL.Context
                 builder.Property(t => t.TagName).IsRequired().HasMaxLength(20);
                 builder.HasIndex(t => t.TagName).IsUnique();
 
+            });
+
+            modelBuilder.Entity<Painting>(builder =>
+            {
+                builder.ToTable("Paintings").HasKey(p => p.PaintingId);
+                builder.Property(p => p.PaintingId).ValueGeneratedOnAdd();
+                builder.Property(p => p.Name).IsRequired().HasMaxLength(50);
+                builder.Property(p => p.Description).IsRequired().HasMaxLength(500);
+                builder.Property(p => p.CretionDate).IsRequired();
+                builder.Property(p => p.Width).IsRequired();
+                builder.Property(p => p.Height).IsRequired();
+                builder.Property(p => p.ImagePath).IsRequired().HasMaxLength(100);
+                builder.Property(p => p.Location).HasMaxLength(100);
+
+                builder.HasOne(p => p.Painter)
+                    .WithMany(pr => pr.Paintings)
+                    .HasForeignKey(p => p.PainterId);
             });
         }
     }

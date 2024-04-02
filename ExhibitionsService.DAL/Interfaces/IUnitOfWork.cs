@@ -7,6 +7,8 @@ namespace ExhibitionsService.DAL.Interfaces
         IUserProfileRepository UserProfiles { get; }
         IPainterRepository Painters { get; }
         ITagRepository Tags { get; }
+        IPaintingRepository Paintings { get; }
+        IImageRepository Images { get; }
         
         Task<IDbContextTransaction> BeginTransactionAsync();
         Task SaveAsync();

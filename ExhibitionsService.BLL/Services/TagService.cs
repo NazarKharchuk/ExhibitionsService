@@ -24,7 +24,7 @@ namespace ExhibitionsService.BLL.Services
             if (entity.TagName.IsNullOrEmpty() || entity.TagName.Length > 20)
                 throw new ValidationException(entity.GetType().Name, nameof(entity.TagName));
 
-            if ((await uow.Tags.FindAsync(t => t.TagName.Equals(entity.TagName))).Any())
+            if ((await uow.Tags.FindAsync(t => t.TagName.Trim().ToLower().Equals(entity.TagName.Trim().ToLower()))).Any())
                 throw new ValidationException(entity.GetType().Name, nameof(entity.TagName), "Тег повинен бути унікальним.");
 
             entity.TagId = 0;
@@ -37,7 +37,7 @@ namespace ExhibitionsService.BLL.Services
             if (entity.TagName.IsNullOrEmpty() || entity.TagName.Length > 20)
                 throw new ValidationException(entity.GetType().Name, nameof(entity.TagName));
 
-            if ((await uow.Tags.FindAsync(t => t.TagName.Equals(entity.TagName))).Any())
+            if ((await uow.Tags.FindAsync(t => t.TagName.Trim().ToLower().Equals(entity.TagName.Trim().ToLower()))).Any())
                 throw new ValidationException(entity.GetType().Name, nameof(entity.TagName), "Тег повинен бути унікальним.");
 
             var existingEntity = await uow.Tags.GetByIdAsync(entity.TagId);
