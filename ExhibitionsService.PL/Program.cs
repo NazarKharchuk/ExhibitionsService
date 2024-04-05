@@ -1,4 +1,5 @@
 
+using ExhibitionsService.BLL.Infrastructure.SeedData;
 using ExhibitionsService.BLL.Interfaces;
 using ExhibitionsService.BLL.Mapping;
 using ExhibitionsService.BLL.Services;
@@ -68,6 +69,20 @@ namespace ExhibitionsService.PL
 
             app.UseAuthorization();
 
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                var configuration = services.GetRequiredService<IConfiguration>();
+                try
+                {
+                    IdentityDataInitializer.SeedData(services, configuration).Wait();
+                }
+                catch (Exception exception)
+                {
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(exception, "Помилка на етапі ініціалізації бази даних початковими значеннями.");
+                }
+            }
 
             app.MapControllers();
 
