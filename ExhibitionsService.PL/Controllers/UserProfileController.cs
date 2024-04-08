@@ -32,13 +32,13 @@ namespace ExhibitionsService.PL.Controllers
             return new ObjectResult(mapper.Map<UserProfileModel>(await profileService.GetByIdAsync(id)));
         }
 
-        [Route("api/profiles")]
+        /*[Route("api/profiles")]
         [HttpPost]
         public async Task<IActionResult> PostProfile([FromBody] UserProfileCreateModel entity)
         {
             await profileService.CreateAsync(mapper.Map<UserProfileDTO>(entity));
             return NoContent();
-        }
+        }*/
 
         [Route("api/profiles/{id}")]
         [HttpPut]

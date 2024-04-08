@@ -7,16 +7,17 @@ using ExhibitionsService.DAL.Context;
 using ExhibitionsService.DAL.Entities;
 using ExhibitionsService.DAL.Interfaces;
 using ExhibitionsService.DAL.Repositories;
+using ExhibitionsService.PL.Mapping.Helper;
 using ExhibitionsService.PL.Mapping.Painter;
 using ExhibitionsService.PL.Mapping.Painting;
 using ExhibitionsService.PL.Mapping.Tag;
 using ExhibitionsService.PL.Mapping.UserProfile;
-
-
-
-//using ExhibitionsService.PL.Middlewares;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Text;
 
 namespace ExhibitionsService.PL
 {
@@ -25,12 +26,6 @@ namespace ExhibitionsService.PL
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
-            // Add services to the container.
-
-            builder.Services.AddControllers();
-
-            builder.Services.AddAuthorization();
 
             // DAL
             builder.Services.AddDbContext<ExhibitionContext>(options =>
@@ -46,16 +41,70 @@ namespace ExhibitionsService.PL
             builder.Services.AddScoped<ITagService, TagService>();
             builder.Services.AddScoped<IPaintingService, PaintingService>();
             builder.Services.AddScoped<IUserProfileService, UserProfileService>();
+            builder.Services.AddScoped<IAuthService, AuthService>();
 
             builder.Services.AddAutoMapper(typeof(PainterProfile), typeof(TagProfile), typeof(PaintingProfile));
 
             // PL
             builder.Services.AddAutoMapper(typeof(PainterModelsProfiles), typeof(TagModelsProfiles), typeof(PaintingModelsProfiles),
-                typeof(UserProfilesProfiles));
+                typeof(UserProfilesProfiles), typeof(AuthorizationProfiles));
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                };
+            });
+
+            builder.Services.AddControllers();
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Version = "v1",
+                    Title = "Exhibition service",
+                    Description = "Asp.Net core Web API"
+                });
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Будь ласка, введіть валідний токен доступу.",
+                });
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] {}
+                    }
+                });
+            });
 
             var app = builder.Build();
 
@@ -71,6 +120,7 @@ namespace ExhibitionsService.PL
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             using (var scope = app.Services.CreateScope())
