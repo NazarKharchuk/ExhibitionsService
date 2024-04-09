@@ -15,5 +15,8 @@
         public Painter Painter { get; set; }
 
         public ICollection<PaintingRating> Ratings { get; set; } = [];
+
+        public ICollection<ExhibitionApplication> ExhibitionApplications { get; set;} = [];
+        public ICollection<Exhibition> Exhibitions { get; set; } = [];
     }
 }

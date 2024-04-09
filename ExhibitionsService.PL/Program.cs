@@ -7,6 +7,8 @@ using ExhibitionsService.DAL.Context;
 using ExhibitionsService.DAL.Entities;
 using ExhibitionsService.DAL.Interfaces;
 using ExhibitionsService.DAL.Repositories;
+using ExhibitionsService.PL.Mapping.Exhibition;
+using ExhibitionsService.PL.Mapping.ExhibitionApplication;
 using ExhibitionsService.PL.Mapping.Helper;
 using ExhibitionsService.PL.Mapping.Painter;
 using ExhibitionsService.PL.Mapping.Painting;
@@ -44,13 +46,16 @@ namespace ExhibitionsService.PL
             builder.Services.AddScoped<IUserProfileService, UserProfileService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IPaintingRatingService, PaintingRatingService>();
+            builder.Services.AddScoped<IExhibitionService, ExhibitionService>();
+            builder.Services.AddScoped<IExhibitionApplicationService, ExhibitionApplicationService>();
 
             builder.Services.AddAutoMapper(typeof(PainterProfile), typeof(TagProfile), typeof(PaintingProfile),
-                typeof(PaintingRatingProfile));
+                typeof(PaintingRatingProfile), typeof(ExhibitionProfile), typeof(ExhibitionApplicationProfile));
 
             // PL
             builder.Services.AddAutoMapper(typeof(PainterModelsProfiles), typeof(TagModelsProfiles), typeof(PaintingModelsProfiles),
-                typeof(UserProfilesProfiles), typeof(AuthorizationProfiles), typeof(PaintingRatingModelsProfiles));
+                typeof(UserProfilesProfiles), typeof(AuthorizationProfiles), typeof(PaintingRatingModelsProfiles),
+                typeof(ExhibitionModelsProfiles), typeof(ExhibitionApplicationModelsProfiles));
 
             builder.Services.AddAuthentication(options =>
             {

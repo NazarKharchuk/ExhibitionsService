@@ -12,6 +12,8 @@ namespace ExhibitionsService.DAL.Context
         public DbSet<Tag> Tags { get; set; }
         public DbSet<Painting> Paintings { get; set; }
         public DbSet<PaintingRating> PaintingRatings { get; set; }
+        public DbSet<Exhibition> Exhibitions { get; set; }
+        public DbSet<ExhibitionApplication> ExhibitionApplications { get; set; }
 
         public ExhibitionContext(DbContextOptions<ExhibitionContext> options): base(options)
         {
@@ -65,6 +67,9 @@ namespace ExhibitionsService.DAL.Context
                 builder.Property(t => t.TagName).IsRequired().HasMaxLength(20);
                 builder.HasIndex(t => t.TagName).IsUnique();
 
+                builder.HasMany(t => t.Exhibitions)
+                    .WithMany(e => e.Tags)
+                    .UsingEntity("TagsExhibitions");
             });
 
             modelBuilder.Entity<Painting>(builder =>
@@ -101,6 +106,36 @@ namespace ExhibitionsService.DAL.Context
                     .WithMany(u => u.Ratings)
                     .HasForeignKey(r => r.PaintingId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Exhibition>(builder =>
+            {
+                builder.ToTable("Exhibitions").HasKey(e => e.ExhibitionId);
+                builder.Property(e => e.ExhibitionId).ValueGeneratedOnAdd();
+                builder.Property(e => e.Name).IsRequired().HasMaxLength(50);
+                builder.Property(e => e.Description).IsRequired().HasMaxLength(500);
+                builder.Property(e => e.AddedDate).IsRequired();
+                builder.Property(e => e.NeedConfirmation).IsRequired();
+                builder.Property(e => e.PainterLimit);
+
+                builder.HasMany(e => e.Paintings)
+                    .WithMany(p => p.Exhibitions)
+                    .UsingEntity<ExhibitionApplication>(
+                        j => j
+                            .HasOne(ea => ea.Painting)
+                            .WithMany(p => p.ExhibitionApplications)
+                            .HasForeignKey(ea => ea.PaintingId),
+                        j => j
+                            .HasOne(ea => ea.Exhibition)
+                            .WithMany(e => e.Applications)
+                            .HasForeignKey(ea => ea.ExhibitionId),
+                        j =>
+                        {
+                            j.ToTable("ExhibitionApplications").HasKey(j => j.ApplicationId);
+                            j.Property(j => j.ApplicationId).ValueGeneratedOnAdd();
+                            j.Property(j => j.IsConfirmed).IsRequired();
+                        }
+                    );
             });
         }
     }
