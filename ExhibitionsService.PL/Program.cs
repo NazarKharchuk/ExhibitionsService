@@ -10,6 +10,7 @@ using ExhibitionsService.DAL.Repositories;
 using ExhibitionsService.PL.Mapping.Helper;
 using ExhibitionsService.PL.Mapping.Painter;
 using ExhibitionsService.PL.Mapping.Painting;
+using ExhibitionsService.PL.Mapping.PaintingRating;
 using ExhibitionsService.PL.Mapping.Tag;
 using ExhibitionsService.PL.Mapping.UserProfile;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -42,12 +43,14 @@ namespace ExhibitionsService.PL
             builder.Services.AddScoped<IPaintingService, PaintingService>();
             builder.Services.AddScoped<IUserProfileService, UserProfileService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IPaintingRatingService, PaintingRatingService>();
 
-            builder.Services.AddAutoMapper(typeof(PainterProfile), typeof(TagProfile), typeof(PaintingProfile));
+            builder.Services.AddAutoMapper(typeof(PainterProfile), typeof(TagProfile), typeof(PaintingProfile),
+                typeof(PaintingRatingProfile));
 
             // PL
             builder.Services.AddAutoMapper(typeof(PainterModelsProfiles), typeof(TagModelsProfiles), typeof(PaintingModelsProfiles),
-                typeof(UserProfilesProfiles), typeof(AuthorizationProfiles));
+                typeof(UserProfilesProfiles), typeof(AuthorizationProfiles), typeof(PaintingRatingModelsProfiles));
 
             builder.Services.AddAuthentication(options =>
             {

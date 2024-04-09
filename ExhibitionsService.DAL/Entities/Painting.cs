@@ -13,5 +13,7 @@
 
         public int PainterId { get; set; }
         public Painter Painter { get; set; }
+
+        public ICollection<PaintingRating> Ratings { get; set; } = [];
     }
 }

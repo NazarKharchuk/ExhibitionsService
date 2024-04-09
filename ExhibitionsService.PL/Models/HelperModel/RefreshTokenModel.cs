@@ -1,4 +1,4 @@
-﻿namespace ExhibitionsService.PL.Models.UserProfile
+﻿namespace ExhibitionsService.PL.Models.HelperModel
 {
     public class RefreshTokenModel
     {

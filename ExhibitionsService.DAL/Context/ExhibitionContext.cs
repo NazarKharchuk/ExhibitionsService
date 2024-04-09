@@ -11,6 +11,7 @@ namespace ExhibitionsService.DAL.Context
         public DbSet<Painter> Painters { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<Painting> Paintings { get; set; }
+        public DbSet<PaintingRating> PaintingRatings { get; set; }
 
         public ExhibitionContext(DbContextOptions<ExhibitionContext> options): base(options)
         {
@@ -81,6 +82,25 @@ namespace ExhibitionsService.DAL.Context
                 builder.HasOne(p => p.Painter)
                     .WithMany(pr => pr.Paintings)
                     .HasForeignKey(p => p.PainterId);
+            });
+
+            modelBuilder.Entity<PaintingRating>(builder =>
+            {
+                builder.ToTable("PaintingRatings").HasKey(r => r.RatingId);
+                builder.Property(r => r.RatingId).ValueGeneratedOnAdd();
+                builder.Property(r => r.RatingValue).IsRequired();
+                builder.Property(r => r.Comment).HasMaxLength(500);
+                builder.Property(r => r.AddedDate).IsRequired();
+
+                builder.HasOne(r => r.UserProfile)
+                    .WithMany(u => u.Ratings)
+                    .HasForeignKey(r => r.ProfileId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                builder.HasOne(r => r.Painting)
+                    .WithMany(u => u.Ratings)
+                    .HasForeignKey(r => r.PaintingId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.PL.Models.HelperModel;
-using ExhibitionsService.PL.Models.UserProfile;
 
 namespace ExhibitionsService.PL.Mapping.Helper
 {

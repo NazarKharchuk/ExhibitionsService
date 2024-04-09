@@ -12,6 +12,7 @@ namespace ExhibitionsService.DAL.Repositories
         private TagRepository TagRepository;
         private PaintingRepository PaintingRepository;
         private ImageRepository ImageRepository;
+        private PaintingRatingRepository PaintingRatingRepository;
 
         public UnitOfWork(ExhibitionContext context)
         {
@@ -60,6 +61,15 @@ namespace ExhibitionsService.DAL.Repositories
             {
                 ImageRepository ??= new ImageRepository(Path.Combine(Environment.CurrentDirectory, "wwwroot"));
                 return ImageRepository;
+            }
+        }
+
+        public IPaintingRatingRepository PaintingRatings
+        {
+            get
+            {
+                PaintingRatingRepository ??= new PaintingRatingRepository(db);
+                return PaintingRatingRepository;
             }
         }
 
