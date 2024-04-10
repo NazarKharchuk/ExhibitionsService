@@ -7,6 +7,8 @@ using ExhibitionsService.DAL.Context;
 using ExhibitionsService.DAL.Entities;
 using ExhibitionsService.DAL.Interfaces;
 using ExhibitionsService.DAL.Repositories;
+using ExhibitionsService.PL.Mapping.Contest;
+using ExhibitionsService.PL.Mapping.ContestApplication;
 using ExhibitionsService.PL.Mapping.Exhibition;
 using ExhibitionsService.PL.Mapping.ExhibitionApplication;
 using ExhibitionsService.PL.Mapping.Helper;
@@ -48,14 +50,18 @@ namespace ExhibitionsService.PL
             builder.Services.AddScoped<IPaintingRatingService, PaintingRatingService>();
             builder.Services.AddScoped<IExhibitionService, ExhibitionService>();
             builder.Services.AddScoped<IExhibitionApplicationService, ExhibitionApplicationService>();
+            builder.Services.AddScoped<IContestService, ContestService>();
+            builder.Services.AddScoped<IContestApplicationService, ContestApplicationService>();
 
             builder.Services.AddAutoMapper(typeof(PainterProfile), typeof(TagProfile), typeof(PaintingProfile),
-                typeof(PaintingRatingProfile), typeof(ExhibitionProfile), typeof(ExhibitionApplicationProfile));
+                typeof(PaintingRatingProfile), typeof(ExhibitionProfile), typeof(ExhibitionApplicationProfile),
+                typeof(ContestProfile), typeof(ContestApplicationProfile));
 
             // PL
             builder.Services.AddAutoMapper(typeof(PainterModelsProfiles), typeof(TagModelsProfiles), typeof(PaintingModelsProfiles),
                 typeof(UserProfilesProfiles), typeof(AuthorizationProfiles), typeof(PaintingRatingModelsProfiles),
-                typeof(ExhibitionModelsProfiles), typeof(ExhibitionApplicationModelsProfiles));
+                typeof(ExhibitionModelsProfiles), typeof(ExhibitionApplicationModelsProfiles), typeof(ContestModelsProfiles),
+                typeof(ContestApplicationModelsProfiles));
 
             builder.Services.AddAuthentication(options =>
             {

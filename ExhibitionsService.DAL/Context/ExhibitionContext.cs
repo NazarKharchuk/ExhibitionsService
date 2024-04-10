@@ -14,6 +14,8 @@ namespace ExhibitionsService.DAL.Context
         public DbSet<PaintingRating> PaintingRatings { get; set; }
         public DbSet<Exhibition> Exhibitions { get; set; }
         public DbSet<ExhibitionApplication> ExhibitionApplications { get; set; }
+        public DbSet<Contest> Contests { get; set; }
+        public DbSet<ContestApplication> ContestApplications { get; set; }
 
         public ExhibitionContext(DbContextOptions<ExhibitionContext> options): base(options)
         {
@@ -70,6 +72,10 @@ namespace ExhibitionsService.DAL.Context
                 builder.HasMany(t => t.Exhibitions)
                     .WithMany(e => e.Tags)
                     .UsingEntity("TagsExhibitions");
+
+                builder.HasMany(t => t.Contests)
+                    .WithMany(c => c.Tags)
+                    .UsingEntity("TagsContests");
             });
 
             modelBuilder.Entity<Painting>(builder =>
@@ -132,6 +138,40 @@ namespace ExhibitionsService.DAL.Context
                         j =>
                         {
                             j.ToTable("ExhibitionApplications").HasKey(j => j.ApplicationId);
+                            j.Property(j => j.ApplicationId).ValueGeneratedOnAdd();
+                            j.Property(j => j.IsConfirmed).IsRequired();
+                        }
+                    );
+            });
+
+            modelBuilder.Entity<Contest>(builder =>
+            {
+                builder.ToTable("Contests").HasKey(c => c.ContestId);
+                builder.Property(c => c.ContestId).ValueGeneratedOnAdd();
+                builder.Property(c => c.Name).IsRequired().HasMaxLength(50);
+                builder.Property(c => c.Description).IsRequired().HasMaxLength(500);
+                builder.Property(c => c.AddedDate).IsRequired();
+                builder.Property(c => c.StartDate).IsRequired();
+                builder.Property(c => c.EndDate).IsRequired();
+                builder.Property(c => c.NeedConfirmation).IsRequired();
+                builder.Property(c => c.PainterLimit);
+                builder.Property(c => c.WinnersCount).IsRequired();
+                builder.Property(c => c.VotesLimit);
+
+                builder.HasMany(c => c.Paintings)
+                    .WithMany(p => p.Contests)
+                    .UsingEntity<ContestApplication>(
+                        j => j
+                            .HasOne(ca => ca.Painting)
+                            .WithMany(p => p.ContestApplications)
+                            .HasForeignKey(ca => ca.PaintingId),
+                        j => j
+                            .HasOne(ca => ca.Contest)
+                            .WithMany(c => c.Applications)
+                            .HasForeignKey(ca => ca.ContestId),
+                        j =>
+                        {
+                            j.ToTable("ContestApplications").HasKey(j => j.ApplicationId);
                             j.Property(j => j.ApplicationId).ValueGeneratedOnAdd();
                             j.Property(j => j.IsConfirmed).IsRequired();
                         }

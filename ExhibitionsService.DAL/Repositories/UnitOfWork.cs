@@ -15,6 +15,8 @@ namespace ExhibitionsService.DAL.Repositories
         private PaintingRatingRepository PaintingRatingRepository;
         private ExhibitionRepository ExhibitionRepository;
         private ExhibitionApplicationRepository ExhibitionApplicationRepository;
+        private ContestRepository ContestRepository;
+        private ContestApplicationRepository ContestApplicationRepository;
 
         public UnitOfWork(ExhibitionContext context)
         {
@@ -90,6 +92,24 @@ namespace ExhibitionsService.DAL.Repositories
             {
                 ExhibitionApplicationRepository ??= new ExhibitionApplicationRepository(db);
                 return ExhibitionApplicationRepository;
+            }
+        }
+
+        public IContestRepository Contests
+        {
+            get
+            {
+                ContestRepository ??= new ContestRepository(db);
+                return ContestRepository;
+            }
+        }
+
+        public IContestApplicationRepository ContestApplications
+        {
+            get
+            {
+                ContestApplicationRepository ??= new ContestApplicationRepository(db);
+                return ContestApplicationRepository;
             }
         }
 

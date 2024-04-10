@@ -18,5 +18,8 @@
 
         public ICollection<ExhibitionApplication> ExhibitionApplications { get; set;} = [];
         public ICollection<Exhibition> Exhibitions { get; set; } = [];
+
+        public ICollection<ContestApplication> ContestApplications { get; set; } = [];
+        public ICollection<Contest> Contests { get; set; } = [];
     }
 }

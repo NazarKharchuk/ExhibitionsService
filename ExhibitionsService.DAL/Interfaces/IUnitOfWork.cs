@@ -12,7 +12,9 @@ namespace ExhibitionsService.DAL.Interfaces
         IPaintingRatingRepository PaintingRatings { get; }
         IExhibitionRepository Exhibitions { get; }
         IExhibitionApplicationRepository ExhibitionApplications { get; }
-        
+        IContestRepository Contests { get; }
+        IContestApplicationRepository ContestApplications { get; }
+
         Task<IDbContextTransaction> BeginTransactionAsync();
         Task SaveAsync();
 

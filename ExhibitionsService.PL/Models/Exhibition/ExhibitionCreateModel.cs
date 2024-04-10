@@ -9,7 +9,7 @@ namespace ExhibitionsService.PL.Models.Exhibition
         public string Name { get; set; }
 
         [Required(ErrorMessage = "Поле 'Description' виставки є обов'язковим.")]
-        [MaxLength(50, ErrorMessage = "Довжина поля 'Description' виставки не повинна перевищувати 50 символів.")]
+        [MaxLength(500, ErrorMessage = "Довжина поля 'Description' виставки не повинна перевищувати 500 символів.")]
         public string Description { get; set; }
 
         [Required(ErrorMessage = "Поле 'NeedConfirmation' виставки є обов'язковим.")]
