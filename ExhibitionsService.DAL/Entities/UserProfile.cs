@@ -16,5 +16,7 @@
 
         public ICollection<PaintingLike> PaintingLikes { get; set; } = [];
         public ICollection<Painting> LikedPaintings { get; set; } = [];
+
+        public ICollection<ContestApplication> VotedContestApplications { get; set; } = [];
     }
 }

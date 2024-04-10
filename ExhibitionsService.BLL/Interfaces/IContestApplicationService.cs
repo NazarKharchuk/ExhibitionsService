@@ -10,5 +10,9 @@ namespace ExhibitionsService.BLL.Interfaces
         Task DeleteAsync(int id);
         Task<ContestApplicationDTO?> GetByIdAsync(int id);
         Task<List<ContestApplicationDTO>> GetAllAsync();
+
+        Task AddVoteAsync(int applicationId, int profileId);
+        Task RemoveVoteAsync(int applicationId, int profileId);
+        Task<int> VotesCountAsync(int applicationId);
     }
 }

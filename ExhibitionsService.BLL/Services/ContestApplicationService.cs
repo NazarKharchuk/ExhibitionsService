@@ -90,6 +90,53 @@ namespace ExhibitionsService.BLL.Services
             return mapper.Map<List<ContestApplicationDTO>>((await uow.ContestApplications.GetAllAsync()).ToList());
         }
 
+        public async Task AddVoteAsync(int applicationId, int profileId)
+        {
+            var application = await CheckEntityPresence(applicationId);
+
+            UserProfile? profile = await uow.UserProfiles.GetByIdAsync(profileId);
+            if (profile == null) throw new EntityNotFoundException(typeof(UserProfileDTO).Name, profileId);
+
+            Contest? contest = await uow.Contests.GetByIdAsync(application.ContestId);
+            if (contest == null) throw new EntityNotFoundException(typeof(ContestDTO).Name, application.ContestId);
+
+            if ((await uow.ContestApplications.FindApplicationsWithVoters(ca =>
+                ca.ContestId == application.ContestId &&
+                ca.Voters.Any(v => v.ProfileId == profileId))).ToArray().Length >= (contest.VotesLimit ?? 0))
+                throw new ValidationException("Користувач вже використав всі свої голоси.");
+
+            if ((await uow.ContestApplications.FindApplicationsWithVoters(ca =>
+                ca.ApplicationId == applicationId &&
+                ca.Voters.Any(v => v.ProfileId == profileId))).Any())
+                throw new ValidationException("Користувач раніше вже проголосував за цю картину.");
+
+            uow.ContestApplications.AddVote(application, profile);
+            await uow.SaveAsync();
+        }
+
+        public async Task RemoveVoteAsync(int applicationId, int profileId)
+        {
+            var application = await CheckEntityPresence(applicationId);
+
+            UserProfile? profile = await uow.UserProfiles.GetByIdAsync(profileId);
+            if (profile == null) throw new EntityNotFoundException(typeof(PaintingDTO).Name, profileId);
+
+            if (!(await uow.ContestApplications.FindApplicationsWithVoters(ca =>
+                ca.ApplicationId == applicationId &&
+                ca.Voters.Any(v => v.ProfileId == profileId))).Any())
+                throw new ValidationException("Користувач ще не проголосував за цю картину.");
+
+            uow.ContestApplications.RemoveVote(applicationId, profileId);
+            await uow.SaveAsync();
+        }
+
+        public async Task<int> VotesCountAsync(int applicationId)
+        {
+            var existingEntity = await CheckEntityPresence(applicationId);
+
+            return (await uow.ContestApplications.FindApplicationsWithVoters(ca => ca.ApplicationId == applicationId)).FirstOrDefault().Voters?.Count ?? 0;
+        }
+
         public void Dispose()
         {
             uow.Dispose();

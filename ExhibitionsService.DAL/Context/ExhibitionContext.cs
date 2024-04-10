@@ -41,11 +41,16 @@ namespace ExhibitionsService.DAL.Context
                 builder.Property(up => up.FirstName).IsRequired().HasMaxLength(20);
                 builder.Property(up => up.LastName).HasMaxLength(20);
                 builder.Property(up => up.JoiningDate).IsRequired();
-
-                /*builder.HasOne(up => up.Painter)
-                    .WithOne(p => p.UserProfile)
-                    .HasForeignKey<Painter>(p => p.ProfileId)
-                    .IsRequired(false);*/
+                
+                builder.HasMany(up => up.VotedContestApplications)
+                    .WithMany(ca => ca.Voters)
+                    .UsingEntity<Dictionary<string, object>>(
+                        "ContestsApplicationsVotes",
+                        j => j.HasOne<ContestApplication>().WithMany().HasForeignKey("ApplicationId")
+                            .OnDelete(DeleteBehavior.Cascade),
+                        j => j.HasOne<UserProfile>().WithMany().HasForeignKey("ProfileId")
+                            .OnDelete(DeleteBehavior.NoAction)
+                    );
             });
 
             modelBuilder.Entity<Painter>(builder =>

@@ -64,5 +64,28 @@ namespace ExhibitionsService.PL.Controllers
             await contestApplicationService.DeleteAsync(id);
             return NoContent();
         }
+
+        [Route("{applicationId}/votes")]
+        [HttpPost]
+        public async Task<IActionResult> AddVote(int applicationId, [FromBody] int profileId)
+        {
+            await contestApplicationService.AddVoteAsync(applicationId, profileId);
+            return NoContent();
+        }
+
+        [Route("{applicationId}/votes/{profileId}")]
+        [HttpDelete]
+        public async Task<IActionResult> RemoveVote(int applicationId, int profileId)
+        {
+            await contestApplicationService.RemoveVoteAsync(applicationId, profileId);
+            return NoContent();
+        }
+
+        [Route("{applicationId}/votes")]
+        [HttpGet]
+        public async Task<IActionResult> VotesCount(int applicationId)
+        {
+            return new ObjectResult(await contestApplicationService.VotesCountAsync(applicationId));
+        }
     }
 }

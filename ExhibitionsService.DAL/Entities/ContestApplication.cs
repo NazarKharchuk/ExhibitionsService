@@ -11,5 +11,7 @@
 
         public int PaintingId { get; set; }
         public Painting Painting { get; set; }
+
+        public ICollection<UserProfile> Voters { get; set; } = [];
     }
 }
