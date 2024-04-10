@@ -93,6 +93,26 @@ namespace ExhibitionsService.DAL.Context
                 builder.HasOne(p => p.Painter)
                     .WithMany(pr => pr.Paintings)
                     .HasForeignKey(p => p.PainterId);
+
+                builder.HasMany(p => p.Likers)
+                    .WithMany(up => up.LikedPaintings)
+                    .UsingEntity<PaintingLike>(
+                        j => j
+                            .HasOne(pl => pl.Profile)
+                            .WithMany(p => p.PaintingLikes)
+                            .HasForeignKey(pl => pl.ProfileId)
+                            .OnDelete(DeleteBehavior.NoAction),
+                        j => j
+                            .HasOne(pl => pl.Painting)
+                            .WithMany(p => p.PaintingLikes)
+                            .HasForeignKey(pl => pl.PaintingId)
+                            .OnDelete(DeleteBehavior.Cascade),
+                        j =>
+                        {
+                            j.ToTable("PaintingsLikes").HasKey(j => new {j.PaintingId, j.ProfileId});
+                            j.Property(j => j.AddedTime).IsRequired();
+                        }
+                    );
             });
 
             modelBuilder.Entity<PaintingRating>(builder =>

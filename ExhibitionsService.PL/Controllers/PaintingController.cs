@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ExhibitionsService.PL.Controllers
 {
     [ApiController]
+    [Route("api/paintings")]
     public class PaintingController : ControllerBase
     {
         private readonly IPaintingService paintingService;
@@ -18,21 +19,21 @@ namespace ExhibitionsService.PL.Controllers
             mapper = _mapper;
         }
 
-        [Route("api/paintings")]
+        [Route("")]
         [HttpGet]
         public async Task<IActionResult> GetPaintings()
         {
             return new ObjectResult(mapper.Map<List<PaintingModel>>((await paintingService.GetAllAsync()).ToList()));
         }
 
-        [Route("api/paintings/{id}")]
+        [Route("{id}")]
         [HttpGet]
         public async Task<IActionResult> GetPainting(int id)
         {
             return new ObjectResult(mapper.Map<PaintingModel>(await paintingService.GetByIdAsync(id)));
         }
 
-        [Route("api/paintings")]
+        [Route("")]
         [HttpPost]
         public async Task<IActionResult> PostPainting([FromForm] PaintingCreateModel entity)
         {
@@ -40,7 +41,7 @@ namespace ExhibitionsService.PL.Controllers
             return NoContent();
         }
 
-        [Route("api/paintings/{id}")]
+        [Route("{id}")]
         [HttpPut]
         public async Task<IActionResult> PutPainting(int id, [FromForm] PaintingUpdateModel entity)
         {
@@ -51,12 +52,35 @@ namespace ExhibitionsService.PL.Controllers
             return NoContent();
         }
 
-        [Route("api/paintings/{id}")]
+        [Route("{id}")]
         [HttpDelete]
         public async Task<IActionResult> DeletePainting(int id)
         {
             await paintingService.DeleteAsync(id);
             return NoContent();
+        }
+
+        [Route("{paintingId}/likes")]
+        [HttpPost]
+        public async Task<IActionResult> AddLike(int paintingId, [FromBody] int profileId)
+        {
+            await paintingService.AddLike(paintingId, profileId);
+            return NoContent();
+        }
+
+        [Route("{paintingId}/likes/{profileId}")]
+        [HttpDelete]
+        public async Task<IActionResult> RemoveLike(int paintingId, int profileId)
+        {
+            await paintingService.RemoveLike(paintingId, profileId);
+            return NoContent();
+        }
+
+        [Route("{paintingId}/likes")]
+        [HttpGet]
+        public async Task<IActionResult> LikesCount(int paintingId)
+        {
+            return new ObjectResult(await paintingService.LikesCount(paintingId));
         }
     }
 }

@@ -88,6 +88,52 @@ namespace ExhibitionsService.BLL.Services
             return mapper.Map<List<PaintingDTO>>((await uow.Paintings.GetAllAsync()).ToList());
         }
 
+        public async Task AddLike(int paintingId, int profileId)
+        {
+            var painting = await CheckEntityPresence(paintingId);
+
+            UserProfile? profile = await uow.UserProfiles.GetByIdAsync(profileId);
+            if (profile == null) throw new EntityNotFoundException(typeof(UserProfileDTO).Name, profileId);
+
+            if ((await uow.Paintings.FindPaintingWithLikes(p =>
+                p.PaintingId == paintingId &&
+                p.PaintingLikes.Any(pl => pl.ProfileId == profileId))).Any())
+                throw new ValidationException("Користувач раніше вже вподобав цю картину.");
+
+            var paintingLike = new PaintingLikeDTO()
+            {
+                PaintingId = paintingId,
+                ProfileId = profileId,
+                AddedTime = DateTime.Now
+            };
+
+            uow.Paintings.AddLike(painting, mapper.Map<PaintingLike>(paintingLike));
+            await uow.SaveAsync();
+        }
+
+        public async Task RemoveLike(int paintingId, int profileId)
+        {
+            var painting = await CheckEntityPresence(paintingId);
+
+            UserProfile? profile = await uow.UserProfiles.GetByIdAsync(profileId);
+            if (profile == null) throw new EntityNotFoundException(typeof(PaintingDTO).Name, profileId);
+
+            if (!(await uow.Paintings.FindPaintingWithLikes(p =>
+                p.PaintingId == paintingId &&
+                p.PaintingLikes.Any(pl => pl.ProfileId == profileId))).Any())
+                throw new ValidationException("Користувач ще не вподобав цю картину.");
+
+            uow.Paintings.RemoveLike(paintingId, profileId);
+            await uow.SaveAsync();
+        }
+
+        public async Task<int> LikesCount(int paintingId)
+        {
+            var existingEntity = await CheckEntityPresence(paintingId);
+
+            return (await uow.Paintings.FindPaintingWithLikes(p => p.PaintingId == paintingId)).FirstOrDefault().PaintingLikes?.Count ?? 0;
+        }
+
         public void Dispose()
         {
             uow.Dispose();

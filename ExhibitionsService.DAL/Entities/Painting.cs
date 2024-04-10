@@ -16,6 +16,9 @@
 
         public ICollection<PaintingRating> Ratings { get; set; } = [];
 
+        public ICollection<PaintingLike> PaintingLikes { get; set; } = [];
+        public ICollection<UserProfile> Likers { get; set; } = [];
+
         public ICollection<ExhibitionApplication> ExhibitionApplications { get; set;} = [];
         public ICollection<Exhibition> Exhibitions { get; set; } = [];
 

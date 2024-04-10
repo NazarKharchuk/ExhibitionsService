@@ -13,5 +13,8 @@
         public Painter? Painter { get; set; }
 
         public ICollection<PaintingRating> Ratings { get; set; } = [];
+
+        public ICollection<PaintingLike> PaintingLikes { get; set; } = [];
+        public ICollection<Painting> LikedPaintings { get; set; } = [];
     }
 }

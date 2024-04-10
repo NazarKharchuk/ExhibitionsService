@@ -55,7 +55,7 @@ namespace ExhibitionsService.PL
 
             builder.Services.AddAutoMapper(typeof(PainterProfile), typeof(TagProfile), typeof(PaintingProfile),
                 typeof(PaintingRatingProfile), typeof(ExhibitionProfile), typeof(ExhibitionApplicationProfile),
-                typeof(ContestProfile), typeof(ContestApplicationProfile));
+                typeof(ContestProfile), typeof(ContestApplicationProfile), typeof(PaintingLikeProfile));
 
             // PL
             builder.Services.AddAutoMapper(typeof(PainterModelsProfiles), typeof(TagModelsProfiles), typeof(PaintingModelsProfiles),
