@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ExhibitionsService.BLL.DTO;
+using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Infrastructure.Exceptions;
 using ExhibitionsService.BLL.Interfaces;
 using ExhibitionsService.DAL.Entities;
@@ -86,6 +87,149 @@ namespace ExhibitionsService.BLL.Services
         public async Task<List<PaintingDTO>> GetAllAsync()
         {
             return mapper.Map<List<PaintingDTO>>((await uow.Paintings.GetAllAsync()).ToList());
+        }
+
+        public async Task AddGenreAsync(int paintingId, int genreId)
+        {
+            var painting = await CheckEntityPresence(paintingId);
+
+            Genre? genre = await uow.Genres.GetByIdAsync(genreId);
+            if (genre == null) throw new EntityNotFoundException(typeof(GenreDTO).Name, genreId);
+
+            var checkAvailability = await uow.Paintings.FindPaintingWithAllInfo(p =>
+                p.PaintingId == paintingId &&
+                p.Genres.Any(pl => pl.GenreId == genreId));
+            if (checkAvailability.Any())
+                throw new ValidationException("Картина вже має цей жанр.");
+
+            uow.Paintings.AddItem(painting.Genres, genre);
+            await uow.SaveAsync();
+        }
+
+        public async Task RemoveGenreAsync(int paintingId, int genreId)
+        {
+            var painting = await CheckEntityPresence(paintingId);
+
+            Genre? genre = await uow.Genres.GetByIdAsync(genreId);
+            if (genre == null) throw new EntityNotFoundException(typeof(GenreDTO).Name, genreId);
+
+            var checkAvailability = await uow.Paintings.FindPaintingWithAllInfo(p =>
+                p.PaintingId == paintingId &&
+                p.Genres.Any(pl => pl.GenreId == genreId));
+            if (!checkAvailability.Any())
+                throw new ValidationException("Картина не має цього жанру.");
+
+            uow.Paintings.RemoveItem(checkAvailability.FirstOrDefault().Genres, genre);
+            await uow.SaveAsync();
+        }
+
+        public async Task AddStyleAsync(int paintingId, int styleId)
+        {
+            var painting = await CheckEntityPresence(paintingId);
+
+            Style? style = await uow.Styles.GetByIdAsync(styleId);
+            if (style == null) throw new EntityNotFoundException(typeof(StyleDTO).Name, styleId);
+
+            var checkAvailability = await uow.Paintings.FindPaintingWithAllInfo(p =>
+                p.PaintingId == paintingId &&
+                p.Styles.Any(pl => pl.StyleId == styleId));
+            if (checkAvailability.Any())
+                throw new ValidationException("Картина вже має цей стиль.");
+
+            uow.Paintings.AddItem(painting.Styles, style);
+            await uow.SaveAsync();
+        }
+
+        public async Task RemoveStyleAsync(int paintingId, int styleId)
+        {
+            var painting = await CheckEntityPresence(paintingId);
+
+            Style? style = await uow.Styles.GetByIdAsync(styleId);
+            if (style == null) throw new EntityNotFoundException(typeof(StyleDTO).Name, styleId);
+
+            var checkAvailability = await uow.Paintings.FindPaintingWithAllInfo(p =>
+                p.PaintingId == paintingId &&
+                p.Styles.Any(pl => pl.StyleId == styleId));
+            if (!checkAvailability.Any())
+                throw new ValidationException("Картина не має цього стилю.");
+
+            uow.Paintings.RemoveItem(checkAvailability.FirstOrDefault().Styles, style);
+            await uow.SaveAsync();
+        }
+
+        public async Task AddMaterialAsync(int paintingId, int materialId)
+        {
+            var painting = await CheckEntityPresence(paintingId);
+
+            Material? material = await uow.Materials.GetByIdAsync(materialId);
+            if (material == null) throw new EntityNotFoundException(typeof(MaterialDTO).Name, materialId);
+
+            var checkAvailability = await uow.Paintings.FindPaintingWithAllInfo(p =>
+                p.PaintingId == paintingId &&
+                p.Materials.Any(pl => pl.MaterialId == materialId));
+            if (checkAvailability.Any())
+                throw new ValidationException("Картина вже має цей матеріал.");
+
+            uow.Paintings.AddItem(painting.Materials, material);
+            await uow.SaveAsync();
+        }
+
+        public async Task RemoveMaterialAsync(int paintingId, int materialId)
+        {
+            var painting = await CheckEntityPresence(paintingId);
+
+            Material? material = await uow.Materials.GetByIdAsync(materialId);
+            if (material == null) throw new EntityNotFoundException(typeof(MaterialDTO).Name, materialId);
+
+            var checkAvailability = await uow.Paintings.FindPaintingWithAllInfo(p =>
+                p.PaintingId == paintingId &&
+                p.Materials.Any(pl => pl.MaterialId == materialId));
+            if (!checkAvailability.Any())
+                throw new ValidationException("Картина не має цього матеріалу.");
+
+            uow.Paintings.RemoveItem(checkAvailability.FirstOrDefault().Materials, material);
+            await uow.SaveAsync();
+        }
+
+        public async Task AddTagAsync(int paintingId, int tagId)
+        {
+            var painting = await CheckEntityPresence(paintingId);
+
+            Tag? tag = await uow.Tags.GetByIdAsync(tagId);
+            if (tag == null) throw new EntityNotFoundException(typeof(TagDTO).Name, tagId);
+
+            var checkAvailability = await uow.Paintings.FindPaintingWithAllInfo(p =>
+                p.PaintingId == paintingId &&
+                p.Tags.Any(pl => pl.TagId == tagId));
+            if (checkAvailability.Any())
+                throw new ValidationException("Картина вже має цей тег.");
+
+            uow.Paintings.AddItem(painting.Tags, tag);
+            await uow.SaveAsync();
+        }
+
+        public async Task RemoveTagAsync(int paintingId, int tagId)
+        {
+            var painting = await CheckEntityPresence(paintingId);
+
+            Tag? tag = await uow.Tags.GetByIdAsync(tagId);
+            if (tag == null) throw new EntityNotFoundException(typeof(TagDTO).Name, tagId);
+
+            var checkAvailability = await uow.Paintings.FindPaintingWithAllInfo(p =>
+                p.PaintingId == paintingId &&
+                p.Tags.Any(pl => pl.TagId == tagId));
+            if (!checkAvailability.Any())
+                throw new ValidationException("Картина не має цього тегу.");
+
+            uow.Paintings.RemoveItem(checkAvailability.FirstOrDefault().Tags, tag);
+            await uow.SaveAsync();
+        }
+
+        public async Task<List<PaintingInfoDTO>> GetAllWithInfoAsync()
+        {
+            var paintingsWithInfo = await uow.Paintings.FindPaintingWithAllInfo(_ => true);
+            var mappedPaintings = mapper.Map<IEnumerable<PaintingInfoDTO>>(paintingsWithInfo);
+            return mappedPaintings.ToList();
         }
 
         public async Task AddLike(int paintingId, int profileId)
