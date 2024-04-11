@@ -9,7 +9,6 @@ namespace ExhibitionsService.DAL.Repositories
         private readonly ExhibitionContext db;
         private UserProfileRepository UserProfileRepository;
         private PainterRepository PainterRepository;
-        private TagRepository TagRepository;
         private PaintingRepository PaintingRepository;
         private ImageRepository ImageRepository;
         private PaintingRatingRepository PaintingRatingRepository;
@@ -17,6 +16,10 @@ namespace ExhibitionsService.DAL.Repositories
         private ExhibitionApplicationRepository ExhibitionApplicationRepository;
         private ContestRepository ContestRepository;
         private ContestApplicationRepository ContestApplicationRepository;
+        private GenreRepository GenreRepository;
+        private StyleRepository StyleRepository;
+        private MaterialRepository MaterialRepository;
+        private TagRepository TagRepository;
 
         public UnitOfWork(ExhibitionContext context)
         {
@@ -38,15 +41,6 @@ namespace ExhibitionsService.DAL.Repositories
             {
                 PainterRepository ??= new PainterRepository(db);
                 return PainterRepository;
-            }
-        }
-
-        public ITagRepository Tags
-        {
-            get
-            {
-                TagRepository ??= new TagRepository(db);
-                return TagRepository;
             }
         }
 
@@ -110,6 +104,42 @@ namespace ExhibitionsService.DAL.Repositories
             {
                 ContestApplicationRepository ??= new ContestApplicationRepository(db);
                 return ContestApplicationRepository;
+            }
+        }
+
+        public IGenreRepository Genres
+        {
+            get
+            {
+                GenreRepository ??= new GenreRepository(db);
+                return GenreRepository;
+            }
+        }
+
+        public IStyleRepository Styles
+        {
+            get
+            {
+                StyleRepository ??= new StyleRepository(db);
+                return StyleRepository;
+            }
+        }
+
+        public IMaterialRepository Materials
+        {
+            get
+            {
+                MaterialRepository ??= new MaterialRepository(db);
+                return MaterialRepository;
+            }
+        }
+
+        public ITagRepository Tags
+        {
+            get
+            {
+                TagRepository ??= new TagRepository(db);
+                return TagRepository;
             }
         }
 

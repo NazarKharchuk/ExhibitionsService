@@ -12,6 +12,27 @@ namespace ExhibitionsService.DAL.Repositories
 
         }
 
+        public void AddItem<T>(ICollection<T> list, T item)
+        {
+            list.Add(item);
+        }
+
+        public void RemoveItem<T>(ICollection<T> list, T item)
+        {
+            list.Remove(item);
+        }
+
+        public async Task<IQueryable<Painting>> FindPaintingWithAllInfo(Func<Painting, bool> predicate)
+        {
+            return db.Paintings
+                .Include(p => p.Painter)
+                .Include(p => p.Genres)
+                .Include(p => p.Styles)
+                .Include(p => p.Materials)
+                .Include(p => p.Tags)
+                .Where(predicate).AsQueryable();
+        }
+
         public void AddLike(Painting painting, PaintingLike like)
         {
             painting.PaintingLikes.Add(like);

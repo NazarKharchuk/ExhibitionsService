@@ -14,6 +14,11 @@
         public int PainterId { get; set; }
         public Painter Painter { get; set; }
 
+        public ICollection<Genre> Genres { get; set; } = [];
+        public ICollection<Style> Styles { get; set; } = [];
+        public ICollection<Material> Materials { get; set; } = [];
+        public ICollection<Tag> Tags { get; set; } = [];
+
         public ICollection<PaintingRating> Ratings { get; set; } = [];
 
         public ICollection<PaintingLike> PaintingLikes { get; set; } = [];

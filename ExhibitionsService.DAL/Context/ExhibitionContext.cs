@@ -9,13 +9,16 @@ namespace ExhibitionsService.DAL.Context
     {
         public DbSet<UserProfile> UserProfiles { get; set; }
         public DbSet<Painter> Painters { get; set; }
-        public DbSet<Tag> Tags { get; set; }
         public DbSet<Painting> Paintings { get; set; }
         public DbSet<PaintingRating> PaintingRatings { get; set; }
         public DbSet<Exhibition> Exhibitions { get; set; }
         public DbSet<ExhibitionApplication> ExhibitionApplications { get; set; }
         public DbSet<Contest> Contests { get; set; }
         public DbSet<ContestApplication> ContestApplications { get; set; }
+        public DbSet<Genre> Genres { get; set; }
+        public DbSet<Style> Styles { get; set; }
+        public DbSet<Material> Materials { get; set; }
+        public DbSet<Tag> Tags { get; set; }
 
         public ExhibitionContext(DbContextOptions<ExhibitionContext> options): base(options)
         {
@@ -73,6 +76,10 @@ namespace ExhibitionsService.DAL.Context
                 builder.Property(t => t.TagId).ValueGeneratedOnAdd();
                 builder.Property(t => t.TagName).IsRequired().HasMaxLength(20);
                 builder.HasIndex(t => t.TagName).IsUnique();
+
+                builder.HasMany(t => t.Paintings)
+                    .WithMany(p => p.Tags)
+                    .UsingEntity("TagsPaintings");
 
                 builder.HasMany(t => t.Exhibitions)
                     .WithMany(e => e.Tags)
@@ -201,6 +208,42 @@ namespace ExhibitionsService.DAL.Context
                             j.Property(j => j.IsConfirmed).IsRequired();
                         }
                     );
+            });
+
+            modelBuilder.Entity<Genre>(builder =>
+            {
+                builder.ToTable("Genres").HasKey(x => x.GenreId);
+                builder.Property(x => x.GenreId).ValueGeneratedOnAdd();
+                builder.Property(x => x.GenreName).IsRequired().HasMaxLength(50);
+                builder.HasIndex(x => x.GenreName).IsUnique();
+
+                builder.HasMany(x => x.Paintings)
+                    .WithMany(p => p.Genres)
+                    .UsingEntity("GenresPaintings");
+            });
+
+            modelBuilder.Entity<Style>(builder =>
+            {
+                builder.ToTable("Styles").HasKey(x => x.StyleId);
+                builder.Property(x => x.StyleId).ValueGeneratedOnAdd();
+                builder.Property(x => x.StyleName).IsRequired().HasMaxLength(50);
+                builder.HasIndex(x => x.StyleName).IsUnique();
+
+                builder.HasMany(x => x.Paintings)
+                    .WithMany(p => p.Styles)
+                    .UsingEntity("StylesPaintings");
+            });
+
+            modelBuilder.Entity<Material>(builder =>
+            {
+                builder.ToTable("Materials").HasKey(x => x.MaterialId);
+                builder.Property(x => x.MaterialId).ValueGeneratedOnAdd();
+                builder.Property(x => x.MaterialName).IsRequired().HasMaxLength(50);
+                builder.HasIndex(x => x.MaterialName).IsUnique();
+
+                builder.HasMany(x => x.Paintings)
+                    .WithMany(p => p.Materials)
+                    .UsingEntity("MaterialsPaintings");
             });
         }
     }
