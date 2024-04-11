@@ -60,6 +60,77 @@ namespace ExhibitionsService.PL.Controllers
             return NoContent();
         }
 
+        [Route("info")]
+        [HttpGet]
+        public async Task<IActionResult> GetPaintingsWithInfo()
+        {
+            return new ObjectResult(mapper.Map<List<PaintingInfoModel>>((await paintingService.GetAllWithInfoAsync()).ToList()));
+        }
+
+        [Route("{paintingId}/genres")]
+        [HttpPost]
+        public async Task<IActionResult> AddGenre(int paintingId, [FromBody] int genreId)
+        {
+            await paintingService.AddGenreAsync(paintingId, genreId);
+            return NoContent();
+        }
+
+        [Route("{paintingId}/genres/{genreId}")]
+        [HttpDelete]
+        public async Task<IActionResult> RemoveGenre(int paintingId, int genreId)
+        {
+            await paintingService.RemoveGenreAsync(paintingId, genreId);
+            return NoContent();
+        }
+
+        [Route("{paintingId}/styles")]
+        [HttpPost]
+        public async Task<IActionResult> AddStyle(int paintingId, [FromBody] int styleId)
+        {
+            await paintingService.AddStyleAsync(paintingId, styleId);
+            return NoContent();
+        }
+
+        [Route("{paintingId}/styles/{styleId}")]
+        [HttpDelete]
+        public async Task<IActionResult> RemoveStyle(int paintingId, int styleId)
+        {
+            await paintingService.RemoveStyleAsync(paintingId, styleId);
+            return NoContent();
+        }
+
+        [Route("{paintingId}/materials")]
+        [HttpPost]
+        public async Task<IActionResult> AddMaterial(int paintingId, [FromBody] int materialId)
+        {
+            await paintingService.AddMaterialAsync(paintingId, materialId);
+            return NoContent();
+        }
+
+        [Route("{paintingId}/materials/{materialId}")]
+        [HttpDelete]
+        public async Task<IActionResult> RemoveMaterial(int paintingId, int materialId)
+        {
+            await paintingService.RemoveMaterialAsync(paintingId, materialId);
+            return NoContent();
+        }
+
+        [Route("{paintingId}/tags")]
+        [HttpPost]
+        public async Task<IActionResult> AddTag(int paintingId, [FromBody] int tagId)
+        {
+            await paintingService.AddTagAsync(paintingId, tagId);
+            return NoContent();
+        }
+
+        [Route("{paintingId}/tags/{tagId}")]
+        [HttpDelete]
+        public async Task<IActionResult> RemoveTag(int paintingId, int tagId)
+        {
+            await paintingService.RemoveTagAsync(paintingId, tagId);
+            return NoContent();
+        }
+
         [Route("{paintingId}/likes")]
         [HttpPost]
         public async Task<IActionResult> AddLike(int paintingId, [FromBody] int profileId)

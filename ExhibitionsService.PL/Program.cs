@@ -11,10 +11,13 @@ using ExhibitionsService.PL.Mapping.Contest;
 using ExhibitionsService.PL.Mapping.ContestApplication;
 using ExhibitionsService.PL.Mapping.Exhibition;
 using ExhibitionsService.PL.Mapping.ExhibitionApplication;
+using ExhibitionsService.PL.Mapping.Genre;
 using ExhibitionsService.PL.Mapping.Helper;
+using ExhibitionsService.PL.Mapping.Material;
 using ExhibitionsService.PL.Mapping.Painter;
 using ExhibitionsService.PL.Mapping.Painting;
 using ExhibitionsService.PL.Mapping.PaintingRating;
+using ExhibitionsService.PL.Mapping.Style;
 using ExhibitionsService.PL.Mapping.Tag;
 using ExhibitionsService.PL.Mapping.UserProfile;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -52,16 +55,21 @@ namespace ExhibitionsService.PL
             builder.Services.AddScoped<IExhibitionApplicationService, ExhibitionApplicationService>();
             builder.Services.AddScoped<IContestService, ContestService>();
             builder.Services.AddScoped<IContestApplicationService, ContestApplicationService>();
+            builder.Services.AddScoped<IGenreService, GenreService>();
+            builder.Services.AddScoped<IStyleService, StyleService>();
+            builder.Services.AddScoped<IMaterialService, MaterialService>();
 
             builder.Services.AddAutoMapper(typeof(PainterProfile), typeof(TagProfile), typeof(PaintingProfile),
                 typeof(PaintingRatingProfile), typeof(ExhibitionProfile), typeof(ExhibitionApplicationProfile),
-                typeof(ContestProfile), typeof(ContestApplicationProfile), typeof(PaintingLikeProfile));
+                typeof(ContestProfile), typeof(ContestApplicationProfile), typeof(PaintingLikeProfile),
+                typeof(GenreProfile), typeof(StyleProfile), typeof(MaterialProfile));
 
             // PL
             builder.Services.AddAutoMapper(typeof(PainterModelsProfiles), typeof(TagModelsProfiles), typeof(PaintingModelsProfiles),
                 typeof(UserProfilesProfiles), typeof(AuthorizationProfiles), typeof(PaintingRatingModelsProfiles),
                 typeof(ExhibitionModelsProfiles), typeof(ExhibitionApplicationModelsProfiles), typeof(ContestModelsProfiles),
-                typeof(ContestApplicationModelsProfiles));
+                typeof(ContestApplicationModelsProfiles), typeof(GenreModelsProfiles), typeof(StyleModelsProfiles),
+                typeof(MaterialModelsProfiles));
 
             builder.Services.AddAuthentication(options =>
             {
