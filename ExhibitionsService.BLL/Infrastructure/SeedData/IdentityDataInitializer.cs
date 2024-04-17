@@ -41,6 +41,7 @@ namespace ExhibitionsService.BLL.Infrastructure.SeedData
                 var createPowerUser = await userManager.CreateAsync(adminUser, configuration["Admin:Password"]);
                 if (createPowerUser.Succeeded)
                 {
+                    await userManager.AddToRoleAsync(adminUser, Role.Viewer.ToString());
                     await userManager.AddToRoleAsync(adminUser, Role.Admin.ToString());
                 }
             }

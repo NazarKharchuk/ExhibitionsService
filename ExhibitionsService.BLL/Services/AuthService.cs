@@ -97,6 +97,26 @@ namespace ExhibitionsService.BLL.Services
             };
         }
 
+        public async Task<AuthorizationDataDTO> GetAuthInfoAsync(Claim? profileIdClaim)
+        {
+            if (profileIdClaim == null)
+                throw new ValidationException("Токен містить не коректну інформацію");
+
+            int profileId = Int32.Parse(profileIdClaim.Value);
+            var user = await userManager.Users
+                .Include(u => u.UserProfile)
+                .FirstOrDefaultAsync(u => u.UserProfile.ProfileId == profileId);
+            if (user == null)
+                throw new ValidationException("Токен доступу містить не валідний ідентифікатор профілю.");
+
+            return new AuthorizationDataDTO
+            {
+                ProfileId = user.UserProfile.ProfileId,
+                Email = user.Email,
+                Roles = (List<string>)(await userManager.GetRolesAsync(user))
+            };
+        }
+
         private async Task<List<Claim>> GetClaims(User user)
         {
             var claims = new List<Claim>()

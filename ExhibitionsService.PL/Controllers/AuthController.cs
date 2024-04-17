@@ -4,11 +4,14 @@ using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Interfaces;
 using ExhibitionsService.PL.Models.HelperModel;
 using ExhibitionsService.PL.Models.UserProfile;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ExhibitionsService.PL.Controllers
 {
     [ApiController]
+    [Route("api")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService authService;
@@ -24,7 +27,7 @@ namespace ExhibitionsService.PL.Controllers
             config = _config;
         }
 
-        [Route("api/register")]
+        [Route("register")]
         [HttpPost]
         public async Task<IActionResult> Register([FromBody] UserProfileCreateModel entity)
         {
@@ -32,7 +35,7 @@ namespace ExhibitionsService.PL.Controllers
             return NoContent();
         }
 
-        [Route("api/login")]
+        [Route("login")]
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] LoginModel entity)
         {
@@ -40,11 +43,21 @@ namespace ExhibitionsService.PL.Controllers
             return new ObjectResult(mapper.Map<AuthorizationDataModel>(res));
         }
 
-        [Route("api/refresh")]
+        [Route("refresh")]
         [HttpPost]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenModel entity)
         {
             var res = await authService.RefreshTokenAsync(mapper.Map<AuthorizationDataDTO>(entity), config);
+            return new ObjectResult(mapper.Map<AuthorizationDataModel>(res));
+        }
+
+        [Authorize]
+        [Route("get_info")]
+        [HttpGet]
+        public async Task<IActionResult> GetAuthInfo()
+        {
+            Claim? profileIdClaim = HttpContext.User.FindFirst("ProfileId");
+            var res = await authService.GetAuthInfoAsync(profileIdClaim);
             return new ObjectResult(mapper.Map<AuthorizationDataModel>(res));
         }
     }

@@ -35,6 +35,20 @@ namespace ExhibitionsService.PL
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("CORSPolicy",
+                    builder =>
+                    {
+                        builder
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials()
+                        .WithExposedHeaders("X-Pagination-Total-Count")
+                        .SetIsOriginAllowed(origin => true);
+                    });
+            });
+
             // DAL
             builder.Services.AddDbContext<ExhibitionContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -141,6 +155,8 @@ namespace ExhibitionsService.PL
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+
+            app.UseCors("CORSPolicy");
 
             app.UseAuthentication();
             app.UseAuthorization();
