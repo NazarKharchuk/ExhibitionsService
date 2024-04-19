@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ExhibitionsService.BLL.DTO;
+using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Infrastructure.Exceptions;
 using ExhibitionsService.BLL.Interfaces;
 using ExhibitionsService.DAL.Entities;
@@ -60,6 +61,22 @@ namespace ExhibitionsService.BLL.Services
         public async Task<List<GenreDTO>> GetAllAsync()
         {
             return mapper.Map<List<GenreDTO>>((await uow.Genres.GetAllAsync()).ToList());
+        }
+
+        public async Task<Tuple<List<GenreDTO>, int>> GetPageAsync(PaginationRequestDTO pagination)
+        {
+            var all = await uow.Genres.GetAllAsync();
+            int count = all.Count();
+            if (pagination.PageNumber == null) pagination.PageNumber = 1;
+            if (pagination.PageSize == null) { pagination.PageSize = 10; };
+            pagination.PageSize = Math.Min(pagination.PageSize.Value, 20);
+            if (pagination.PageNumber < 1 || pagination.PageNumber > (int)Math.Ceiling((double)count / pagination.PageSize.Value))
+            {
+                throw new ValidationException("Номер сторінки вийшов за межі можливого діапазону.");
+            }
+
+            all = all.Skip((int)((pagination.PageNumber - 1) * pagination.PageSize)).Take((int)pagination.PageSize);
+            return Tuple.Create(mapper.Map<List<GenreDTO>>(all), count);
         }
 
         public void Dispose()

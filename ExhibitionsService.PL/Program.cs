@@ -84,7 +84,7 @@ namespace ExhibitionsService.PL
                 typeof(UserProfilesProfiles), typeof(AuthorizationProfiles), typeof(PaintingRatingModelsProfiles),
                 typeof(ExhibitionModelsProfiles), typeof(ExhibitionApplicationModelsProfiles), typeof(ContestModelsProfiles),
                 typeof(ContestApplicationModelsProfiles), typeof(GenreModelsProfiles), typeof(StyleModelsProfiles),
-                typeof(MaterialModelsProfiles));
+                typeof(MaterialModelsProfiles), typeof(FilterPaginationModelsProfiles));
 
             builder.Services.AddAuthentication(options =>
             {

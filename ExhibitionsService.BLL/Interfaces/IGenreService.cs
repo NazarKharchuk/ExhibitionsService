@@ -1,4 +1,5 @@
 ﻿using ExhibitionsService.BLL.DTO;
+using ExhibitionsService.BLL.DTO.HelperDTO;
 
 namespace ExhibitionsService.BLL.Interfaces
 {
@@ -9,5 +10,6 @@ namespace ExhibitionsService.BLL.Interfaces
         Task DeleteAsync(int id);
         Task<GenreDTO?> GetByIdAsync(int id);
         Task<List<GenreDTO>> GetAllAsync();
+        Task<Tuple<List<GenreDTO>, int>> GetPageAsync(PaginationRequestDTO pagination);
     }
 }

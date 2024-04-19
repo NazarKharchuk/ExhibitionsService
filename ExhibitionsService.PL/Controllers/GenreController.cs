@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ExhibitionsService.BLL.DTO;
+using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Interfaces;
 using ExhibitionsService.PL.Models.Genre;
 using ExhibitionsService.PL.Models.HelperModel;
@@ -22,10 +23,15 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("")]
         [HttpGet]
-        public async Task<IActionResult> GetGenres()
+        public async Task<IActionResult> GetGenres([FromQuery] PaginationRequestModel pagination)
         {
-            return new ObjectResult(ResponseModel<List<GenreModel>>.CoverSuccessResponse(
-                mapper.Map<List<GenreModel>>((await genreService.GetAllAsync()).ToList())
+            var paginationResult = await genreService.GetPageAsync(mapper.Map<PaginationRequestDTO>(pagination));
+            return new ObjectResult(ResponseModel<PaginationResponseModel<GenreModel>>.CoverSuccessResponse(
+                new PaginationResponseModel<GenreModel>()
+                {
+                    PageContent = mapper.Map<List<GenreModel>>(paginationResult.Item1),
+                    TotalCount = paginationResult.Item2
+                }
                 ));
         }
 
