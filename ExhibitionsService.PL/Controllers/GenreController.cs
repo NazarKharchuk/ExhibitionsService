@@ -2,6 +2,7 @@
 using ExhibitionsService.BLL.DTO;
 using ExhibitionsService.BLL.Interfaces;
 using ExhibitionsService.PL.Models.Genre;
+using ExhibitionsService.PL.Models.HelperModel;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExhibitionsService.PL.Controllers
@@ -23,14 +24,18 @@ namespace ExhibitionsService.PL.Controllers
         [HttpGet]
         public async Task<IActionResult> GetGenres()
         {
-            return new ObjectResult(mapper.Map<List<GenreModel>>((await genreService.GetAllAsync()).ToList()));
+            return new ObjectResult(ResponseModel<List<GenreModel>>.CoverSuccessResponse(
+                mapper.Map<List<GenreModel>>((await genreService.GetAllAsync()).ToList())
+                ));
         }
 
         [Route("{id}")]
         [HttpGet]
         public async Task<IActionResult> GetGenre(int id)
         {
-            return new ObjectResult(mapper.Map<GenreModel>(await genreService.GetByIdAsync(id)));
+            return new ObjectResult(ResponseModel<GenreModel>.CoverSuccessResponse(
+                mapper.Map<GenreModel>(await genreService.GetByIdAsync(id))
+                ));
         }
 
         [Route("")]
@@ -38,7 +43,7 @@ namespace ExhibitionsService.PL.Controllers
         public async Task<IActionResult> PostGenre([FromBody] GenreCreateModel entity)
         {
             await genreService.CreateAsync(mapper.Map<GenreDTO>(entity));
-            return NoContent();
+            return new ObjectResult(ResponseModel<GenreModel>.CoverSuccessResponse(null));
         }
 
         [Route("{id}")]
@@ -49,7 +54,7 @@ namespace ExhibitionsService.PL.Controllers
                 throw new ArgumentException("Ідентифікатор, вказаний в URL, не відповідає ідентифікатору у тілі запиту.");
 
             await genreService.UpdateAsync(mapper.Map<GenreDTO>(entity));
-            return NoContent();
+            return new ObjectResult(ResponseModel<GenreModel>.CoverSuccessResponse(null));
         }
 
         [Route("{id}")]
@@ -57,7 +62,7 @@ namespace ExhibitionsService.PL.Controllers
         public async Task<IActionResult> DeleteGenre(int id)
         {
             await genreService.DeleteAsync(id);
-            return NoContent();
+            return new ObjectResult(ResponseModel<GenreModel>.CoverSuccessResponse(null));
         }
     }
 }

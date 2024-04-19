@@ -1,4 +1,5 @@
 ﻿using ExhibitionsService.BLL.Infrastructure.Exceptions;
+using ExhibitionsService.PL.Models.HelperModel;
 using System.Net;
 using System.Text.Json;
 
@@ -27,32 +28,37 @@ namespace ExhibitionsService.PL.Middlewares
 
         private static Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            var exceptionResult = JsonSerializer.Serialize(new { error = exception.Message });
-            context.Response.ContentType = "application/json";
+            int statusCode;
             switch (exception)
             {
                 case EntityNotFoundException:
                     {
-                        context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                        statusCode = (int)HttpStatusCode.NotFound;
                         break;
                     }
                 case ValidationException:
                     {
-                        context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                        statusCode = (int)HttpStatusCode.BadRequest;
                         break;
                     }
                 case ArgumentException:
                     {
-                        context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                        statusCode = (int)HttpStatusCode.BadRequest;
                         break;
                     }
                 default:
                     {
-                        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                        statusCode = (int)HttpStatusCode.InternalServerError;
                         break;
                     }
             }
-
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = (int)HttpStatusCode.OK;
+            var exceptionResult = JsonSerializer.Serialize(new ResponseModel<Object> {
+                Successfully = false,
+                Message = exception.Message,
+                Code = statusCode,
+            });
             return context.Response.WriteAsync(exceptionResult);
         }
     }

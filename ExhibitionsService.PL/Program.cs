@@ -20,6 +20,7 @@ using ExhibitionsService.PL.Mapping.PaintingRating;
 using ExhibitionsService.PL.Mapping.Style;
 using ExhibitionsService.PL.Mapping.Tag;
 using ExhibitionsService.PL.Mapping.UserProfile;
+using ExhibitionsService.PL.Middlewares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -144,7 +145,7 @@ namespace ExhibitionsService.PL
 
             var app = builder.Build();
 
-            //app.UseMiddleware<GlobalErrorHandlingMiddleware>();
+            app.UseMiddleware<GlobalErrorHandlingMiddleware>();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

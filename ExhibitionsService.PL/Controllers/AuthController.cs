@@ -32,7 +32,7 @@ namespace ExhibitionsService.PL.Controllers
         public async Task<IActionResult> Register([FromBody] UserProfileCreateModel entity)
         {
             await profileService.CreateAsync(mapper.Map<UserProfileDTO>(entity));
-            return NoContent();
+            return new ObjectResult(ResponseModel<AuthorizationDataModel>.CoverSuccessResponse(null));
         }
 
         [Route("login")]
@@ -40,7 +40,9 @@ namespace ExhibitionsService.PL.Controllers
         public async Task<IActionResult> Login([FromBody] LoginModel entity)
         {
             var res = await authService.LoginAsync(mapper.Map<UserProfileDTO>(entity), config);
-            return new ObjectResult(mapper.Map<AuthorizationDataModel>(res));
+            return new ObjectResult(ResponseModel<AuthorizationDataModel>.CoverSuccessResponse(
+                mapper.Map<AuthorizationDataModel>(res)
+                ));
         }
 
         [Route("refresh")]
@@ -48,7 +50,9 @@ namespace ExhibitionsService.PL.Controllers
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenModel entity)
         {
             var res = await authService.RefreshTokenAsync(mapper.Map<AuthorizationDataDTO>(entity), config);
-            return new ObjectResult(mapper.Map<AuthorizationDataModel>(res));
+            return new ObjectResult(ResponseModel<AuthorizationDataModel>.CoverSuccessResponse(
+                mapper.Map<AuthorizationDataModel>(res)
+                ));
         }
 
         [Authorize]
@@ -58,7 +62,9 @@ namespace ExhibitionsService.PL.Controllers
         {
             Claim? profileIdClaim = HttpContext.User.FindFirst("ProfileId");
             var res = await authService.GetAuthInfoAsync(profileIdClaim);
-            return new ObjectResult(mapper.Map<AuthorizationDataModel>(res));
+            return new ObjectResult(ResponseModel<AuthorizationDataModel>.CoverSuccessResponse(
+                mapper.Map<AuthorizationDataModel>(res)
+                ));
         }
     }
 }
