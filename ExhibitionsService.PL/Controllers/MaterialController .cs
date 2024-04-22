@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using ExhibitionsService.BLL.DTO;
+using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Interfaces;
+using ExhibitionsService.PL.Models.HelperModel;
 using ExhibitionsService.PL.Models.Material;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,16 +23,25 @@ namespace ExhibitionsService.PL.Controllers
 
         [HttpGet]
         [Route("")]
-        public async Task<IActionResult> GetMaterials()
+        public async Task<IActionResult> GetMaterials([FromQuery] PaginationRequestModel pagination)
         {
-            return new ObjectResult(mapper.Map<List<MaterialModel>>((await materialService.GetAllAsync()).ToList()));
+            var paginationResult = await materialService.GetPageAsync(mapper.Map<PaginationRequestDTO>(pagination));
+            return new ObjectResult(ResponseModel<PaginationResponseModel<MaterialModel>>.CoverSuccessResponse(
+                new PaginationResponseModel<MaterialModel>()
+                {
+                    PageContent = mapper.Map<List<MaterialModel>>(paginationResult.Item1),
+                    TotalCount = paginationResult.Item2
+                }
+                ));
         }
 
         [Route("{id}")]
         [HttpGet]
         public async Task<IActionResult> GetMaterial(int id)
         {
-            return new ObjectResult(mapper.Map<MaterialModel>(await materialService.GetByIdAsync(id)));
+            return new ObjectResult(ResponseModel<MaterialModel>.CoverSuccessResponse(
+                mapper.Map<MaterialModel>(await materialService.GetByIdAsync(id))
+                ));
         }
 
         [Route("")]
@@ -38,7 +49,7 @@ namespace ExhibitionsService.PL.Controllers
         public async Task<IActionResult> PostMaterial([FromBody] MaterialCreateModel entity)
         {
             await materialService.CreateAsync(mapper.Map<MaterialDTO>(entity));
-            return NoContent();
+            return new ObjectResult(ResponseModel<MaterialModel>.CoverSuccessResponse(null));
         }
 
         [Route("{id}")]
@@ -49,7 +60,7 @@ namespace ExhibitionsService.PL.Controllers
                 throw new ArgumentException("Ідентифікатор, вказаний в URL, не відповідає ідентифікатору у тілі запиту.");
 
             await materialService.UpdateAsync(mapper.Map<MaterialDTO>(entity));
-            return NoContent();
+            return new ObjectResult(ResponseModel<MaterialModel>.CoverSuccessResponse(null));
         }
 
         [Route("{id}")]
@@ -57,7 +68,7 @@ namespace ExhibitionsService.PL.Controllers
         public async Task<IActionResult> DeleteMaterial(int id)
         {
             await materialService.DeleteAsync(id);
-            return NoContent();
+            return new ObjectResult(ResponseModel<MaterialModel>.CoverSuccessResponse(null));
         }
     }
 }

@@ -78,7 +78,7 @@ namespace ExhibitionsService.BLL.Services
 
         private void ValidateEntity(PaintingRatingDTO entity)
         {
-            if (entity.RatingValue < 0 || entity.RatingValue > 10)
+            if (entity.RatingValue < 0 || entity.RatingValue > 5)
                 throw new ValidationException(entity.GetType().Name, nameof(entity.RatingValue));
 
             if (!entity.Comment.IsNullOrEmpty() && entity.Comment.Length > 500)

@@ -70,9 +70,11 @@ namespace ExhibitionsService.BLL.Services
             if (pagination.PageNumber == null) pagination.PageNumber = 1;
             if (pagination.PageSize == null) { pagination.PageSize = 10; };
             pagination.PageSize = Math.Min(pagination.PageSize.Value, 20);
-            if (pagination.PageNumber < 1 || pagination.PageNumber > (int)Math.Ceiling((double)count / pagination.PageSize.Value))
+            if (pagination.PageNumber < 1 ||
+                pagination.PageNumber < 1 ||
+                (pagination.PageNumber > (int)Math.Ceiling((double)count / pagination.PageSize.Value) && count != 0))
             {
-                throw new ValidationException("Номер сторінки вийшов за межі можливого діапазону.");
+                throw new ValidationException("Не коректний номер або розмір сторінки.");
             }
 
             all = all.Skip((int)((pagination.PageNumber - 1) * pagination.PageSize)).Take((int)pagination.PageSize);

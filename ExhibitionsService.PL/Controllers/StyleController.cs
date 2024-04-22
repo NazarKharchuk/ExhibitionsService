@@ -1,6 +1,10 @@
 ﻿using AutoMapper;
 using ExhibitionsService.BLL.DTO;
+using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Interfaces;
+using ExhibitionsService.BLL.Services;
+using ExhibitionsService.PL.Models.Genre;
+using ExhibitionsService.PL.Models.HelperModel;
 using ExhibitionsService.PL.Models.Style;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,16 +25,25 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("")]
         [HttpGet]
-        public async Task<IActionResult> GetStyles()
+        public async Task<IActionResult> GetStyles([FromQuery] PaginationRequestModel pagination)
         {
-            return new ObjectResult(mapper.Map<List<StyleModel>>((await styleService.GetAllAsync()).ToList()));
+            var paginationResult = await styleService.GetPageAsync(mapper.Map<PaginationRequestDTO>(pagination));
+            return new ObjectResult(ResponseModel<PaginationResponseModel<StyleModel>>.CoverSuccessResponse(
+                new PaginationResponseModel<StyleModel>()
+                {
+                    PageContent = mapper.Map<List<StyleModel>>(paginationResult.Item1),
+                    TotalCount = paginationResult.Item2
+                }
+                ));
         }
 
         [Route("{id}")]
         [HttpGet]
         public async Task<IActionResult> GetStyle(int id)
         {
-            return new ObjectResult(mapper.Map<StyleModel>(await styleService.GetByIdAsync(id)));
+            return new ObjectResult(ResponseModel<StyleModel>.CoverSuccessResponse(
+                mapper.Map<StyleModel>(await styleService.GetByIdAsync(id))
+                ));
         }
 
         [Route("")]
@@ -38,7 +51,7 @@ namespace ExhibitionsService.PL.Controllers
         public async Task<IActionResult> PostStyle([FromBody] StyleCreateModel entity)
         {
             await styleService.CreateAsync(mapper.Map<StyleDTO>(entity));
-            return NoContent();
+            return new ObjectResult(ResponseModel<StyleModel>.CoverSuccessResponse(null));
         }
 
         [Route("{id}")]
@@ -49,7 +62,7 @@ namespace ExhibitionsService.PL.Controllers
                 throw new ArgumentException("Ідентифікатор, вказаний в URL, не відповідає ідентифікатору у тілі запиту.");
 
             await styleService.UpdateAsync(mapper.Map<StyleDTO>(entity));
-            return NoContent();
+            return new ObjectResult(ResponseModel<StyleModel>.CoverSuccessResponse(null));
         }
 
         [Route("{id}")]
@@ -57,7 +70,7 @@ namespace ExhibitionsService.PL.Controllers
         public async Task<IActionResult> DeleteStyle(int id)
         {
             await styleService.DeleteAsync(id);
-            return NoContent();
+            return new ObjectResult(ResponseModel<StyleModel>.CoverSuccessResponse(null));
         }
     }
 }

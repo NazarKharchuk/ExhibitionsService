@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ExhibitionsService.BLL.DTO;
+using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Infrastructure.Exceptions;
 using ExhibitionsService.BLL.Interfaces;
 using ExhibitionsService.DAL.Entities;
@@ -60,6 +61,24 @@ namespace ExhibitionsService.BLL.Services
         public async Task<List<StyleDTO>> GetAllAsync()
         {
             return mapper.Map<List<StyleDTO>>((await uow.Styles.GetAllAsync()).ToList());
+        }
+
+        public async Task<Tuple<List<StyleDTO>, int>> GetPageAsync(PaginationRequestDTO pagination)
+        {
+            var all = await uow.Styles.GetAllAsync();
+            int count = all.Count();
+            if (pagination.PageNumber == null) pagination.PageNumber = 1;
+            if (pagination.PageSize == null) { pagination.PageSize = 10; };
+            pagination.PageSize = Math.Min(pagination.PageSize.Value, 20);
+            if (pagination.PageNumber < 1 ||
+                pagination.PageNumber < 1 ||
+                (pagination.PageNumber > (int)Math.Ceiling((double)count / pagination.PageSize.Value) && count != 0))
+            {
+                throw new ValidationException("Не коректний номер або розмір сторінки.");
+            }
+
+            all = all.Skip((int)((pagination.PageNumber - 1) * pagination.PageSize)).Take((int)pagination.PageSize);
+            return Tuple.Create(mapper.Map<List<StyleDTO>>(all), count);
         }
 
         public void Dispose()
