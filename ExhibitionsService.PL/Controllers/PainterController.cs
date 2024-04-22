@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using ExhibitionsService.BLL.DTO;
+using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Interfaces;
+using ExhibitionsService.PL.Models.HelperModel;
 using ExhibitionsService.PL.Models.Painter;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,16 +22,25 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("api/painters")]
         [HttpGet]
-        public async Task<IActionResult> GetPainters()
+        public async Task<IActionResult> GetPainters([FromQuery] PaginationRequestModel pagination)
         {
-            return new ObjectResult(mapper.Map<List<PainterModel>>((await painterService.GetAllAsync()).ToList()));
+            var paginationResult = await painterService.GetPagePainterInfoAsync(mapper.Map<PaginationRequestDTO>(pagination));
+            return new ObjectResult(ResponseModel<PaginationResponseModel<PainterInfoModel>>.CoverSuccessResponse(
+                new PaginationResponseModel<PainterInfoModel>()
+                {
+                    PageContent = mapper.Map<List<PainterInfoModel>>(paginationResult.Item1),
+                    TotalCount = paginationResult.Item2
+                }
+                ));
         }
 
         [Route("api/painters/{id}")]
         [HttpGet]
         public async Task<IActionResult> GetPainter(int id)
         {
-            return new ObjectResult(mapper.Map<PainterModel>(await painterService.GetByIdAsync(id)));
+            return new ObjectResult(ResponseModel<PainterInfoModel>.CoverSuccessResponse(
+                mapper.Map<PainterInfoModel>(await painterService.GetByIdWithInfoAsync(id))
+                ));
         }
 
         [Route("api/painters")]
@@ -37,7 +48,7 @@ namespace ExhibitionsService.PL.Controllers
         public async Task<IActionResult> PostPainter([FromBody] PainterCreateModel entity)
         {
             await painterService.CreateAsync(mapper.Map<PainterDTO>(entity));
-            return NoContent();
+            return new ObjectResult(ResponseModel<PainterModel>.CoverSuccessResponse(null));
         }
 
         [Route("api/painters/{id}")]
@@ -48,7 +59,7 @@ namespace ExhibitionsService.PL.Controllers
                 throw new ArgumentException("Ідентифікатор, вказаний в URL, не відповідає ідентифікатору у тілі запиту.");
 
             await painterService.UpdateAsync(mapper.Map<PainterDTO>(entity));
-            return NoContent();
+            return new ObjectResult(ResponseModel<PainterModel>.CoverSuccessResponse(null));
         }
 
         [Route("api/painters/{id}")]
@@ -56,7 +67,7 @@ namespace ExhibitionsService.PL.Controllers
         public async Task<IActionResult> DeletePainter(int id)
         {
             await painterService.DeleteAsync(id);
-            return NoContent();
+            return new ObjectResult(ResponseModel<PainterModel>.CoverSuccessResponse(null));
         }
     }
 }
