@@ -1,11 +1,14 @@
 ﻿using ExhibitionsService.BLL.DTO;
+using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Infrastructure.Exceptions;
 using ExhibitionsService.BLL.Interfaces;
 using ExhibitionsService.DAL.Entities;
 using ExhibitionsService.DAL.Enums;
 using ExhibitionsService.DAL.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Data;
 using System.Text.RegularExpressions;
 
 namespace ExhibitionsService.BLL.Services
@@ -79,6 +82,44 @@ namespace ExhibitionsService.BLL.Services
             await userManager.DeleteAsync(existingEntities.Item1);
         }
 
+        public async Task AddRole(int id, Role _role)
+        {
+            var existingEntities = await CheckEntityPresence(id);
+            var role = _role.ToString();
+
+            var userHasRole = await userManager.IsInRoleAsync(existingEntities.Item1, role);
+            if (userHasRole)
+            {
+                throw new ValidationException($"Користувач вже має роль '{role}'.");
+            }
+
+            var result = await userManager.AddToRoleAsync(existingEntities.Item1, role);
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors.Select(e => e.Description);
+                throw new Exception($"Не вдалось додати роль'{role}' користувачеві. Помилки: {string.Join(", ", errors)}");
+            }
+        }
+
+        public async Task DeleteRole(int id, Role _role)
+        {
+            var existingEntities = await CheckEntityPresence(id);
+            var role = _role.ToString();
+
+            var userHasRole = await userManager.IsInRoleAsync(existingEntities.Item1, role);
+            if (!userHasRole)
+            {
+                throw new ValidationException($"Користувач ще не має ролі художника.");
+            }
+
+            var result = await userManager.RemoveFromRoleAsync(existingEntities.Item1, role);
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors.Select(e => e.Description);
+                throw new Exception($"Не вдалось видалити роль'{role}' користувачеві. Помилки: {string.Join(", ", errors)}");
+            }
+        }
+
         public async Task<UserProfileDTO?> GetByIdAsync(int id)
         {
             var existingEntities = await CheckEntityPresence(id);
@@ -91,6 +132,42 @@ namespace ExhibitionsService.BLL.Services
                 LastName = existingEntities.Item2.LastName,
                 JoiningDate = existingEntities.Item2.JoiningDate,
             };
+        }
+
+        public async Task<Tuple<List<UserProfileInfoDTO>, int>> GetPageUserProfilesAsync(PaginationRequestDTO pagination)
+        {
+            var all = await uow.UserProfiles.GetAllProfilesWithUsersAsync();
+            int count = all.Count();
+            if (pagination.PageNumber == null) pagination.PageNumber = 1;
+            if (pagination.PageSize == null) { pagination.PageSize = 10; };
+            pagination.PageSize = Math.Min(pagination.PageSize.Value, 20);
+            if (pagination.PageNumber < 1 ||
+                pagination.PageNumber < 1 ||
+                (pagination.PageNumber > (int)Math.Ceiling((double)count / pagination.PageSize.Value) && count != 0))
+            {
+                throw new ValidationException("Не коректний номер або розмір сторінки.");
+            }
+
+            all = all.Skip((int)((pagination.PageNumber - 1) * pagination.PageSize)).Take((int)pagination.PageSize);
+
+            var page = await all.ToListAsync();
+
+            var userProfileInfoDtos = new List<UserProfileInfoDTO>();
+            foreach (var userProfile in page)
+            {
+                var userProfileInfoDto = new UserProfileInfoDTO
+                {
+                    ProfileId = userProfile.ProfileId,
+                    Email = userProfile.User.Email,
+                    FirstName = userProfile.FirstName,
+                    LastName = userProfile.LastName,
+                    JoiningDate = userProfile.JoiningDate,
+                    Roles = await GetRolesForUserAsync(userProfile.User.Id),
+                };
+                userProfileInfoDtos.Add(userProfileInfoDto);
+            }
+
+            return Tuple.Create(userProfileInfoDtos, count);
         }
 
         public void Dispose()
@@ -123,6 +200,17 @@ namespace ExhibitionsService.BLL.Services
                 throw new EntityNotFoundException(typeof(UserProfileDTO).Name, id);
 
             return existingEntities;
+        }
+
+        private async Task<List<string>> GetRolesForUserAsync(int userId)
+        {
+            var user = await userManager.FindByIdAsync(userId.ToString());
+
+            if (user == null) throw new EntityNotFoundException(typeof(UserProfileDTO).Name, userId);
+
+            var roles = await userManager.GetRolesAsync(user);
+
+            return [.. roles];
         }
     }
 }

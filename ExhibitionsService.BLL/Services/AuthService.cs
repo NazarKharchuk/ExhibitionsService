@@ -35,6 +35,7 @@ namespace ExhibitionsService.BLL.Services
 
             var user = await userManager.Users
                 .Include(u => u.UserProfile)
+                    .ThenInclude(up => up.Painter)
                 .FirstOrDefaultAsync(u => u.Email == entity.Email);
 
             if (user == null || !(await userManager.CheckPasswordAsync(user, entity.Password)))
@@ -51,6 +52,7 @@ namespace ExhibitionsService.BLL.Services
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
                 ProfileId = user.UserProfile.ProfileId,
+                PainterId = user.UserProfile.Painter?.PainterId,
                 Email = user.Email,
                 Roles = (List<string>)(await userManager.GetRolesAsync(user))
             };
@@ -74,6 +76,7 @@ namespace ExhibitionsService.BLL.Services
 
             var user = await userManager.Users
                 .Include(u => u.UserProfile)
+                    .ThenInclude(up => up.Painter)
                 .FirstOrDefaultAsync(u => u.Email == emailClaim.Value);
             if(user == null)
                 throw new ValidationException("Токен доступу містить не валідний email.");
@@ -92,6 +95,7 @@ namespace ExhibitionsService.BLL.Services
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
                 ProfileId = user.UserProfile.ProfileId,
+                PainterId = user.UserProfile.Painter?.PainterId,
                 Email = user.Email,
                 Roles = (List<string>)(await userManager.GetRolesAsync(user))
             };
@@ -105,6 +109,7 @@ namespace ExhibitionsService.BLL.Services
             int profileId = Int32.Parse(profileIdClaim.Value);
             var user = await userManager.Users
                 .Include(u => u.UserProfile)
+                    .ThenInclude(up => up.Painter)
                 .FirstOrDefaultAsync(u => u.UserProfile.ProfileId == profileId);
             if (user == null)
                 throw new ValidationException("Токен доступу містить не валідний ідентифікатор профілю.");
@@ -112,6 +117,7 @@ namespace ExhibitionsService.BLL.Services
             return new AuthorizationDataDTO
             {
                 ProfileId = user.UserProfile.ProfileId,
+                PainterId = user.UserProfile.Painter?.PainterId,
                 Email = user.Email,
                 Roles = (List<string>)(await userManager.GetRolesAsync(user))
             };
@@ -123,6 +129,7 @@ namespace ExhibitionsService.BLL.Services
             {
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim("ProfileId", user.UserProfile.ProfileId.ToString()),
+                new Claim("PainterId", user.UserProfile.Painter != null ? user.UserProfile.Painter.PainterId.ToString() : ""),
             };
 
             var userRoles = await userManager.GetRolesAsync(user);

@@ -1,4 +1,6 @@
 ﻿using ExhibitionsService.BLL.DTO;
+using ExhibitionsService.BLL.DTO.HelperDTO;
+using ExhibitionsService.DAL.Enums;
 
 namespace ExhibitionsService.BLL.Interfaces
 {
@@ -8,6 +10,8 @@ namespace ExhibitionsService.BLL.Interfaces
         Task<UserProfileDTO> UpdateAsync(UserProfileDTO entity);
         Task DeleteAsync(int id);
         Task<UserProfileDTO?> GetByIdAsync(int id);
-        //Task<List<UserProfileDTO>> GetAllAsync();
+        Task AddRole(int id, Role _role);
+        Task DeleteRole(int id, Role _role);
+        Task<Tuple<List<UserProfileInfoDTO>, int>> GetPageUserProfilesAsync(PaginationRequestDTO pagination);
     }
 }

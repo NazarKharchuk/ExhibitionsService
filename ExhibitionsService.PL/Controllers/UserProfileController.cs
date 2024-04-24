@@ -1,12 +1,15 @@
 ﻿using AutoMapper;
 using ExhibitionsService.BLL.DTO;
+using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Interfaces;
+using ExhibitionsService.PL.Models.HelperModel;
 using ExhibitionsService.PL.Models.UserProfile;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExhibitionsService.PL.Controllers
 {
     [ApiController]
+    [Route("api/profiles")]
     public class UserProfileController : ControllerBase
     {
         private readonly IUserProfileService profileService;
@@ -18,29 +21,30 @@ namespace ExhibitionsService.PL.Controllers
             mapper = _mapper;
         }
 
-        /*[Route("api/profiles")]
+        [Route("")]
         [HttpGet]
-        public async Task<IActionResult> GetProfiles()
+        public async Task<IActionResult> GetProfiles([FromQuery] PaginationRequestModel pagination)
         {
-            return new ObjectResult(mapper.Map<List<UserProfileModel>>((await profileService.GetAllAsync()).ToList()));
-        }*/
+            var paginationResult = await profileService.GetPageUserProfilesAsync(mapper.Map<PaginationRequestDTO>(pagination));
+            return new ObjectResult(ResponseModel<PaginationResponseModel<UserProfileInfoModel>>.CoverSuccessResponse(
+                new PaginationResponseModel<UserProfileInfoModel>()
+                {
+                    PageContent = mapper.Map<List<UserProfileInfoModel>>(paginationResult.Item1),
+                    TotalCount = paginationResult.Item2
+                }
+                ));
+        }
 
-        [Route("api/profiles/{id}")]
+        [Route("{id}")]
         [HttpGet]
         public async Task<IActionResult> GetProfile(int id)
         {
-            return new ObjectResult(mapper.Map<UserProfileModel>(await profileService.GetByIdAsync(id)));
+            return new ObjectResult(ResponseModel<UserProfileModel>.CoverSuccessResponse(
+                mapper.Map<UserProfileModel>(await profileService.GetByIdAsync(id))
+                ));
         }
 
-        /*[Route("api/profiles")]
-        [HttpPost]
-        public async Task<IActionResult> PostProfile([FromBody] UserProfileCreateModel entity)
-        {
-            await profileService.CreateAsync(mapper.Map<UserProfileDTO>(entity));
-            return NoContent();
-        }*/
-
-        [Route("api/profiles/{id}")]
+        [Route("{id}")]
         [HttpPut]
         public async Task<IActionResult> PutProfile(int id, [FromBody] UserProfileUpdateModel entity)
         {
@@ -48,15 +52,31 @@ namespace ExhibitionsService.PL.Controllers
                 throw new ArgumentException("Ідентифікатор, вказаний в URL, не відповідає ідентифікатору у тілі запиту.");
 
             await profileService.UpdateAsync(mapper.Map<UserProfileDTO>(entity));
-            return NoContent();
+            return new ObjectResult(ResponseModel<UserProfileModel>.CoverSuccessResponse(null));
         }
 
-        [Route("api/profiles/{id}")]
+        [Route("{id}")]
         [HttpDelete]
         public async Task<IActionResult> DeleteProfile(int id)
         {
             await profileService.DeleteAsync(id);
-            return NoContent();
+            return new ObjectResult(ResponseModel<UserProfileModel>.CoverSuccessResponse(null));
+        }
+
+        [Route("{id}/admin")]
+        [HttpPost]
+        public async Task<IActionResult> AddAdminRole(int id)
+        {
+            await profileService.AddRole(id, DAL.Enums.Role.Admin);
+            return new ObjectResult(ResponseModel<UserProfileModel>.CoverSuccessResponse(null));
+        }
+
+        [Route("{id}/admin")]
+        [HttpDelete]
+        public async Task<IActionResult> DeleteAdminRole(int id)
+        {
+            await profileService.DeleteRole(id, DAL.Enums.Role.Admin);
+            return new ObjectResult(ResponseModel<UserProfileModel>.CoverSuccessResponse(null));
         }
     }
 }

@@ -16,5 +16,10 @@ namespace ExhibitionsService.DAL.Repositories
             if (profile == null) return new Tuple<User?, UserProfile?>(null, null);
             else return new Tuple<User?, UserProfile?>(profile.User, profile);
         }
+
+        public async Task<IQueryable<UserProfile>> GetAllProfilesWithUsersAsync()
+        {
+            return db.UserProfiles.Include(p => p.User).AsQueryable();
+        }
     }
 }

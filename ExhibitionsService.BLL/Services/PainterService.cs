@@ -4,6 +4,7 @@ using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Infrastructure.Exceptions;
 using ExhibitionsService.BLL.Interfaces;
 using ExhibitionsService.DAL.Entities;
+using ExhibitionsService.DAL.Enums;
 using ExhibitionsService.DAL.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -13,31 +14,39 @@ namespace ExhibitionsService.BLL.Services
     public class PainterService : IPainterService
     {
         private readonly IUnitOfWork uow;
+        private readonly IUserProfileService profileService;
         private readonly IMapper mapper;
 
-        public PainterService(IUnitOfWork _uow, IMapper _mapper)
+        public PainterService(IUnitOfWork _uow, IUserProfileService _profileService, IMapper _mapper)
         {
             uow = _uow;
+            profileService = _profileService;
             mapper = _mapper;
         }
 
         public async Task CreateAsync(PainterDTO entity)
         {
-            ValidateEntity(entity);
+            await ValidateEntity(entity);
 
             if (await uow.UserProfiles.GetByIdAsync(entity.ProfileId) == null)
                 throw new ValidationException(entity.GetType().Name, nameof(entity.ProfileId), "Профіль користувача з вказаним Id не існує");
 
-            // Додати перевірку зв'язку 1 до 1 (або через авторизаційні дані взяти ІД)
+            if ((await uow.Painters.FindAsync(p => p.ProfileId.Equals(entity.ProfileId))).Any())
+                throw new ValidationException("Цей користувач вже має обліковий запис художника.");
 
             entity.PainterId = 0;
             await uow.Painters.CreateAsync(mapper.Map<Painter>(entity));
             await uow.SaveAsync();
+            
+            var userEntities = await uow.UserProfiles.GetUserAndProfileByIdAsync(entity.ProfileId);
+            if (userEntities.Item1 == null || userEntities.Item2 == null)
+                throw new EntityNotFoundException(typeof(UserProfileDTO).Name, entity.ProfileId);
+            await profileService.AddRole(userEntities.Item2.ProfileId, Role.Painter);
         }
 
         public async Task<PainterDTO> UpdateAsync(PainterDTO entity)
         {
-            ValidateEntity(entity);
+            await ValidateEntity(entity);
 
             var existingEntity = await CheckEntityPresence(entity.PainterId);
 
@@ -53,6 +62,8 @@ namespace ExhibitionsService.BLL.Services
         public async Task DeleteAsync(int id)
         {
             var existingEntity = await CheckEntityPresence(id);
+
+            await profileService.DeleteRole(existingEntity.ProfileId, Role.Painter);
 
             await uow.Painters.DeleteAsync(id);
             await uow.SaveAsync();
@@ -72,7 +83,22 @@ namespace ExhibitionsService.BLL.Services
             var allWithInfo = uow.Painters.GetAllPaintersWithInfo();
             var painter = allWithInfo.Where(p => p.PainterId == id).FirstOrDefault();
 
-            return mapper.Map<PainterInfoDTO>(painter);
+            return new PainterInfoDTO()
+            {
+                PainterId = painter.PainterId,
+                Pseudonym = painter.Pseudonym,
+                Description = painter.Description,
+                ProfileId = painter.ProfileId,
+                FirstName = painter.UserProfile.FirstName,
+                LastName = painter.UserProfile.LastName,
+                JoiningDate = painter.UserProfile.JoiningDate,
+                LikesCount = painter.Paintings.Any() ? painter.Paintings.Sum(pg => pg.PaintingLikes.Count) : 0,
+                VictoriesCount = painter.Paintings.Any() ? painter.Paintings.SelectMany(pg => pg.ContestApplications).Count(ca => ca.IsWon) : 0,
+                RatingCount = painter.Paintings.Any() ? painter.Paintings.Sum(pg => pg.Ratings.Count) : 0,
+                AvgRating = painter.Paintings.Any() && painter.Paintings.SelectMany(painting => painting.Ratings).Any()
+                        ? painter.Paintings.SelectMany(painting => painting.Ratings).Average(r => r.RatingValue)
+                        : 0
+            };
         }
 
         public async Task<List<PainterDTO>> GetAllAsync()
@@ -121,13 +147,19 @@ namespace ExhibitionsService.BLL.Services
             uow.Dispose();
         }
 
-        private void ValidateEntity(PainterDTO entity)
+        private async Task ValidateEntity(PainterDTO entity)
         {
             if (entity.Description.IsNullOrEmpty() || entity.Description.Length > 500)
                 throw new ValidationException(entity.GetType().Name, nameof(entity.Description));
 
             if (entity.Pseudonym.IsNullOrEmpty() || entity.Pseudonym.Length > 20)
                 throw new ValidationException(entity.GetType().Name, nameof(entity.Pseudonym));
+
+            if ((await uow.Painters.FindAsync(p =>
+                p.Pseudonym.Trim().ToLower() == entity.Pseudonym.Trim().ToLower() &&
+                !p.PainterId.Equals(entity.PainterId)
+            )).Any())
+                throw new ValidationException(entity.GetType().Name, nameof(entity.Pseudonym), "Псевдонім повинен бути унікальним.");
         }
 
         private async Task<Painter?> CheckEntityPresence(int id)

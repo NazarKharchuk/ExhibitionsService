@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ExhibitionsService.PL.Controllers
 {
     [ApiController]
+    [Route("api/painters")]
     public class PainterController : ControllerBase
     {
         private readonly IPainterService painterService;
@@ -20,7 +21,7 @@ namespace ExhibitionsService.PL.Controllers
             mapper = _mapper;
         }
 
-        [Route("api/painters")]
+        [Route("")]
         [HttpGet]
         public async Task<IActionResult> GetPainters([FromQuery] PaginationRequestModel pagination)
         {
@@ -34,7 +35,7 @@ namespace ExhibitionsService.PL.Controllers
                 ));
         }
 
-        [Route("api/painters/{id}")]
+        [Route("{id}")]
         [HttpGet]
         public async Task<IActionResult> GetPainter(int id)
         {
@@ -43,7 +44,7 @@ namespace ExhibitionsService.PL.Controllers
                 ));
         }
 
-        [Route("api/painters")]
+        [Route("")]
         [HttpPost]
         public async Task<IActionResult> PostPainter([FromBody] PainterCreateModel entity)
         {
@@ -51,7 +52,7 @@ namespace ExhibitionsService.PL.Controllers
             return new ObjectResult(ResponseModel<PainterModel>.CoverSuccessResponse(null));
         }
 
-        [Route("api/painters/{id}")]
+        [Route("{id}")]
         [HttpPut]
         public async Task<IActionResult> PutPainter(int id, [FromBody] PainterUpdateModel entity)
         {
@@ -62,7 +63,7 @@ namespace ExhibitionsService.PL.Controllers
             return new ObjectResult(ResponseModel<PainterModel>.CoverSuccessResponse(null));
         }
 
-        [Route("api/painters/{id}")]
+        [Route("{id}")]
         [HttpDelete]
         public async Task<IActionResult> DeletePainter(int id)
         {

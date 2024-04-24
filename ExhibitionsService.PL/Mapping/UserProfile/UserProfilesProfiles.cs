@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ExhibitionsService.BLL.DTO;
+using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.PL.Models.UserProfile;
 
 namespace ExhibitionsService.PL.Mapping.UserProfile
@@ -12,6 +13,7 @@ namespace ExhibitionsService.PL.Mapping.UserProfile
             CreateMap<UserProfileCreateModel, UserProfileDTO>().ReverseMap();
             CreateMap<UserProfileUpdateModel, UserProfileDTO>().ReverseMap();
             CreateMap<LoginModel, UserProfileDTO>().ReverseMap();
+            CreateMap<UserProfileInfoDTO, UserProfileInfoModel>();
         }
     }
 }
