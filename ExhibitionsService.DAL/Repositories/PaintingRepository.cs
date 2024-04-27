@@ -22,15 +22,19 @@ namespace ExhibitionsService.DAL.Repositories
             list.Remove(item);
         }
 
-        public async Task<IQueryable<Painting>> FindPaintingWithAllInfo(Func<Painting, bool> predicate)
+        public async Task<IQueryable<Painting>> GetAllPaintingsWithInfoAsync()
         {
             return db.Paintings
                 .Include(p => p.Painter)
+                .Include(p => p.Ratings)
+                .Include(p => p.PaintingLikes)
                 .Include(p => p.Genres)
                 .Include(p => p.Styles)
                 .Include(p => p.Materials)
                 .Include(p => p.Tags)
-                .Where(predicate).AsQueryable();
+                .Include(p => p.ExhibitionApplications)
+                .Include(p => p.ContestApplications)
+                .AsQueryable();
         }
 
         public void AddLike(Painting painting, PaintingLike like)
@@ -46,11 +50,6 @@ namespace ExhibitionsService.DAL.Repositories
                 PaintingLike? paintingLike = painting.PaintingLikes.FirstOrDefault(l => l.ProfileId == profileId);
                 if(paintingLike != null) painting.PaintingLikes.Remove(paintingLike);
             }
-        }
-
-        public async Task<IQueryable<Painting>> FindPaintingWithLikes(Func<Painting, bool> predicate)
-        {
-            return db.Paintings.Include(p => p.PaintingLikes).Where(predicate).AsQueryable();
         }
     }
 }

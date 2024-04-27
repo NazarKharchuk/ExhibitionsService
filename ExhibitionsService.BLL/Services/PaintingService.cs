@@ -6,7 +6,9 @@ using ExhibitionsService.BLL.Interfaces;
 using ExhibitionsService.DAL.Entities;
 using ExhibitionsService.DAL.Interfaces;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 
 namespace ExhibitionsService.BLL.Services
 {
@@ -21,7 +23,7 @@ namespace ExhibitionsService.BLL.Services
             mapper = _mapper;
         }
 
-        public async Task CreateAsync(PaintingDTO entity, IFormFile image)
+        public async Task<PaintingDTO> CreateAsync(PaintingDTO entity, IFormFile image)
         {
             ValidateEntity(entity);
 
@@ -34,8 +36,9 @@ namespace ExhibitionsService.BLL.Services
 
             entity.PaintingId = 0;
             entity.ImagePath = imagePath;
-            await uow.Paintings.CreateAsync(mapper.Map<Painting>(entity));
+            var savedEntity = await uow.Paintings.CreateAsync(mapper.Map<Painting>(entity));
             await uow.SaveAsync();
+            return mapper.Map<PaintingDTO>(savedEntity);
         }
 
         public async Task<PaintingDTO> UpdateAsync(PaintingDTO entity, IFormFile? image)
@@ -96,7 +99,8 @@ namespace ExhibitionsService.BLL.Services
             Genre? genre = await uow.Genres.GetByIdAsync(genreId);
             if (genre == null) throw new EntityNotFoundException(typeof(GenreDTO).Name, genreId);
 
-            var checkAvailability = await uow.Paintings.FindPaintingWithAllInfo(p =>
+            var all = await uow.Paintings.GetAllPaintingsWithInfoAsync();
+            var checkAvailability = all.Where(p =>
                 p.PaintingId == paintingId &&
                 p.Genres.Any(pl => pl.GenreId == genreId));
             if (checkAvailability.Any())
@@ -113,7 +117,8 @@ namespace ExhibitionsService.BLL.Services
             Genre? genre = await uow.Genres.GetByIdAsync(genreId);
             if (genre == null) throw new EntityNotFoundException(typeof(GenreDTO).Name, genreId);
 
-            var checkAvailability = await uow.Paintings.FindPaintingWithAllInfo(p =>
+            var all = await uow.Paintings.GetAllPaintingsWithInfoAsync();
+            var checkAvailability = all.Where(p =>
                 p.PaintingId == paintingId &&
                 p.Genres.Any(pl => pl.GenreId == genreId));
             if (!checkAvailability.Any())
@@ -130,7 +135,8 @@ namespace ExhibitionsService.BLL.Services
             Style? style = await uow.Styles.GetByIdAsync(styleId);
             if (style == null) throw new EntityNotFoundException(typeof(StyleDTO).Name, styleId);
 
-            var checkAvailability = await uow.Paintings.FindPaintingWithAllInfo(p =>
+            var all = await uow.Paintings.GetAllPaintingsWithInfoAsync();
+            var checkAvailability = all.Where(p =>
                 p.PaintingId == paintingId &&
                 p.Styles.Any(pl => pl.StyleId == styleId));
             if (checkAvailability.Any())
@@ -147,7 +153,8 @@ namespace ExhibitionsService.BLL.Services
             Style? style = await uow.Styles.GetByIdAsync(styleId);
             if (style == null) throw new EntityNotFoundException(typeof(StyleDTO).Name, styleId);
 
-            var checkAvailability = await uow.Paintings.FindPaintingWithAllInfo(p =>
+            var all = await uow.Paintings.GetAllPaintingsWithInfoAsync();
+            var checkAvailability = all.Where(p =>
                 p.PaintingId == paintingId &&
                 p.Styles.Any(pl => pl.StyleId == styleId));
             if (!checkAvailability.Any())
@@ -164,7 +171,8 @@ namespace ExhibitionsService.BLL.Services
             Material? material = await uow.Materials.GetByIdAsync(materialId);
             if (material == null) throw new EntityNotFoundException(typeof(MaterialDTO).Name, materialId);
 
-            var checkAvailability = await uow.Paintings.FindPaintingWithAllInfo(p =>
+            var all = await uow.Paintings.GetAllPaintingsWithInfoAsync();
+            var checkAvailability = all.Where(p =>
                 p.PaintingId == paintingId &&
                 p.Materials.Any(pl => pl.MaterialId == materialId));
             if (checkAvailability.Any())
@@ -181,7 +189,8 @@ namespace ExhibitionsService.BLL.Services
             Material? material = await uow.Materials.GetByIdAsync(materialId);
             if (material == null) throw new EntityNotFoundException(typeof(MaterialDTO).Name, materialId);
 
-            var checkAvailability = await uow.Paintings.FindPaintingWithAllInfo(p =>
+            var all = await uow.Paintings.GetAllPaintingsWithInfoAsync();
+            var checkAvailability = all.Where(p =>
                 p.PaintingId == paintingId &&
                 p.Materials.Any(pl => pl.MaterialId == materialId));
             if (!checkAvailability.Any())
@@ -198,7 +207,8 @@ namespace ExhibitionsService.BLL.Services
             Tag? tag = await uow.Tags.GetByIdAsync(tagId);
             if (tag == null) throw new EntityNotFoundException(typeof(TagDTO).Name, tagId);
 
-            var checkAvailability = await uow.Paintings.FindPaintingWithAllInfo(p =>
+            var all = await uow.Paintings.GetAllPaintingsWithInfoAsync();
+            var checkAvailability = all.Where(p =>
                 p.PaintingId == paintingId &&
                 p.Tags.Any(pl => pl.TagId == tagId));
             if (checkAvailability.Any())
@@ -215,7 +225,8 @@ namespace ExhibitionsService.BLL.Services
             Tag? tag = await uow.Tags.GetByIdAsync(tagId);
             if (tag == null) throw new EntityNotFoundException(typeof(TagDTO).Name, tagId);
 
-            var checkAvailability = await uow.Paintings.FindPaintingWithAllInfo(p =>
+            var all = await uow.Paintings.GetAllPaintingsWithInfoAsync();
+            var checkAvailability = all.Where(p =>
                 p.PaintingId == paintingId &&
                 p.Tags.Any(pl => pl.TagId == tagId));
             if (!checkAvailability.Any())
@@ -225,23 +236,61 @@ namespace ExhibitionsService.BLL.Services
             await uow.SaveAsync();
         }
 
-        public async Task<List<PaintingInfoDTO>> GetAllWithInfoAsync()
+        public async Task<PaintingInfoDTO> GetByIdWithInfoAsync(int id, ClaimsPrincipal claims)
         {
-            var paintingsWithInfo = await uow.Paintings.FindPaintingWithAllInfo(_ => true);
-            var mappedPaintings = mapper.Map<IEnumerable<PaintingInfoDTO>>(paintingsWithInfo);
-            return mappedPaintings.ToList();
+            var existingEntity = await CheckEntityPresence(id);
+
+            var allWithInfo = await uow.Paintings.GetAllPaintingsWithInfoAsync();
+            var painting = allWithInfo.Where(p => p.PaintingId == id).FirstOrDefault();
+
+            string? profileIdClaim = claims.FindFirst("ProfileId")?.Value;
+            int? profileId = profileIdClaim != null ? int.Parse(profileIdClaim) : null;
+
+            return mapper.Map<Painting, PaintingInfoDTO>(painting, opt =>
+                    opt.AfterMap((src, dest) => dest.IsLiked =
+                        profileId == null ? null : src.PaintingLikes.Any(pl => pl.ProfileId == profileId)));
         }
 
-        public async Task AddLike(int paintingId, int profileId)
+        public async Task<Tuple<List<PaintingInfoDTO>, int>> GetPagePaintingInfoAsync(PaginationRequestDTO pagination, ClaimsPrincipal claims)
+        {
+            var all = await uow.Paintings.GetAllAsync();
+            int count = all.Count();
+            if (pagination.PageNumber == null) pagination.PageNumber = 1;
+            if (pagination.PageSize == null) { pagination.PageSize = 12; };
+            pagination.PageSize = Math.Min(pagination.PageSize.Value, 21);
+            if (pagination.PageNumber < 1 ||
+                pagination.PageNumber < 1 ||
+                (pagination.PageNumber > (int)Math.Ceiling((double)count / pagination.PageSize.Value) && count != 0))
+            {
+                throw new ValidationException("Не коректний номер або розмір сторінки.");
+            }
+
+            var allWithInfo = await uow.Paintings.GetAllPaintingsWithInfoAsync();
+            allWithInfo = allWithInfo.Skip((int)((pagination.PageNumber - 1) * pagination.PageSize)).Take((int)pagination.PageSize);
+
+            string? profileIdClaim = claims.FindFirst("ProfileId")?.Value;
+            int? profileId = profileIdClaim != null ? int.Parse(profileIdClaim) : null;
+
+            var res = (await allWithInfo.ToListAsync())
+                .Select(p => mapper.Map<Painting, PaintingInfoDTO>(p, opt =>
+                    opt.AfterMap((src, dest) => dest.IsLiked =
+                        profileId == null ? null : src.PaintingLikes.Any(pl => pl.ProfileId == profileId)))
+                ).ToList();
+            return Tuple.Create(res, count);
+        }
+
+        public async Task AddLikeAsync(int paintingId, int profileId)
         {
             var painting = await CheckEntityPresence(paintingId);
 
             UserProfile? profile = await uow.UserProfiles.GetByIdAsync(profileId);
             if (profile == null) throw new EntityNotFoundException(typeof(UserProfileDTO).Name, profileId);
 
-            if ((await uow.Paintings.FindPaintingWithLikes(p =>
+            var all = await uow.Paintings.GetAllPaintingsWithInfoAsync();
+            var checkAvailability = all.Where(p =>
                 p.PaintingId == paintingId &&
-                p.PaintingLikes.Any(pl => pl.ProfileId == profileId))).Any())
+                p.PaintingLikes.Any(pl => pl.ProfileId == profileId));
+            if (checkAvailability.Any())
                 throw new ValidationException("Користувач раніше вже вподобав цю картину.");
 
             var paintingLike = new PaintingLikeDTO()
@@ -255,27 +304,22 @@ namespace ExhibitionsService.BLL.Services
             await uow.SaveAsync();
         }
 
-        public async Task RemoveLike(int paintingId, int profileId)
+        public async Task RemoveLikeAsync(int paintingId, int profileId)
         {
             var painting = await CheckEntityPresence(paintingId);
 
             UserProfile? profile = await uow.UserProfiles.GetByIdAsync(profileId);
             if (profile == null) throw new EntityNotFoundException(typeof(PaintingDTO).Name, profileId);
 
-            if (!(await uow.Paintings.FindPaintingWithLikes(p =>
+            var all = await uow.Paintings.GetAllPaintingsWithInfoAsync();
+            var checkAvailability = all.Where(p =>
                 p.PaintingId == paintingId &&
-                p.PaintingLikes.Any(pl => pl.ProfileId == profileId))).Any())
+                p.PaintingLikes.Any(pl => pl.ProfileId == profileId));
+            if (!checkAvailability.Any())
                 throw new ValidationException("Користувач ще не вподобав цю картину.");
 
             uow.Paintings.RemoveLike(paintingId, profileId);
             await uow.SaveAsync();
-        }
-
-        public async Task<int> LikesCount(int paintingId)
-        {
-            var existingEntity = await CheckEntityPresence(paintingId);
-
-            return (await uow.Paintings.FindPaintingWithLikes(p => p.PaintingId == paintingId)).FirstOrDefault().PaintingLikes?.Count ?? 0;
         }
 
         public void Dispose()

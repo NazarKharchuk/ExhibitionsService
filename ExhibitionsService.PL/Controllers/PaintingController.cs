@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using ExhibitionsService.BLL.DTO;
+using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Interfaces;
+using ExhibitionsService.PL.Models.HelperModel;
 using ExhibitionsService.PL.Models.Painting;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,24 +23,33 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("")]
         [HttpGet]
-        public async Task<IActionResult> GetPaintings()
+        public async Task<IActionResult> GetPaintings([FromQuery] PaginationRequestModel pagination)
         {
-            return new ObjectResult(mapper.Map<List<PaintingModel>>((await paintingService.GetAllAsync()).ToList()));
+            var paginationResult = await paintingService.GetPagePaintingInfoAsync(mapper.Map<PaginationRequestDTO>(pagination), HttpContext.User);
+            return new ObjectResult(ResponseModel<PaginationResponseModel<PaintingInfoModel>>.CoverSuccessResponse(
+                new PaginationResponseModel<PaintingInfoModel>()
+                {
+                    PageContent = mapper.Map<List<PaintingInfoModel>>(paginationResult.Item1),
+                    TotalCount = paginationResult.Item2
+                }
+                ));
         }
 
         [Route("{id}")]
         [HttpGet]
         public async Task<IActionResult> GetPainting(int id)
         {
-            return new ObjectResult(mapper.Map<PaintingModel>(await paintingService.GetByIdAsync(id)));
+            return new ObjectResult(ResponseModel<PaintingInfoModel>.CoverSuccessResponse(
+                mapper.Map<PaintingInfoModel>(await paintingService.GetByIdWithInfoAsync(id, HttpContext.User))
+                ));
         }
 
         [Route("")]
         [HttpPost]
         public async Task<IActionResult> PostPainting([FromForm] PaintingCreateModel entity)
         {
-            await paintingService.CreateAsync(mapper.Map<PaintingDTO>(entity), entity.Image);
-            return NoContent();
+            var savedModel = await paintingService.CreateAsync(mapper.Map<PaintingDTO>(entity), entity.Image);
+            return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(mapper.Map<PaintingModel>(savedModel)));
         }
 
         [Route("{id}")]
@@ -49,7 +60,7 @@ namespace ExhibitionsService.PL.Controllers
                 throw new ArgumentException("Ідентифікатор, вказаний в URL, не відповідає ідентифікатору у тілі запиту.");
 
             await paintingService.UpdateAsync(mapper.Map<PaintingDTO>(entity), entity.Image);
-            return NoContent();
+            return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
 
         [Route("{id}")]
@@ -57,14 +68,7 @@ namespace ExhibitionsService.PL.Controllers
         public async Task<IActionResult> DeletePainting(int id)
         {
             await paintingService.DeleteAsync(id);
-            return NoContent();
-        }
-
-        [Route("info")]
-        [HttpGet]
-        public async Task<IActionResult> GetPaintingsWithInfo()
-        {
-            return new ObjectResult(mapper.Map<List<PaintingInfoModel>>((await paintingService.GetAllWithInfoAsync()).ToList()));
+            return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
 
         [Route("{paintingId}/genres")]
@@ -72,7 +76,7 @@ namespace ExhibitionsService.PL.Controllers
         public async Task<IActionResult> AddGenre(int paintingId, [FromBody] int genreId)
         {
             await paintingService.AddGenreAsync(paintingId, genreId);
-            return NoContent();
+            return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
 
         [Route("{paintingId}/genres/{genreId}")]
@@ -80,7 +84,7 @@ namespace ExhibitionsService.PL.Controllers
         public async Task<IActionResult> RemoveGenre(int paintingId, int genreId)
         {
             await paintingService.RemoveGenreAsync(paintingId, genreId);
-            return NoContent();
+            return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
 
         [Route("{paintingId}/styles")]
@@ -88,7 +92,7 @@ namespace ExhibitionsService.PL.Controllers
         public async Task<IActionResult> AddStyle(int paintingId, [FromBody] int styleId)
         {
             await paintingService.AddStyleAsync(paintingId, styleId);
-            return NoContent();
+            return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
 
         [Route("{paintingId}/styles/{styleId}")]
@@ -96,7 +100,7 @@ namespace ExhibitionsService.PL.Controllers
         public async Task<IActionResult> RemoveStyle(int paintingId, int styleId)
         {
             await paintingService.RemoveStyleAsync(paintingId, styleId);
-            return NoContent();
+            return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
 
         [Route("{paintingId}/materials")]
@@ -104,7 +108,7 @@ namespace ExhibitionsService.PL.Controllers
         public async Task<IActionResult> AddMaterial(int paintingId, [FromBody] int materialId)
         {
             await paintingService.AddMaterialAsync(paintingId, materialId);
-            return NoContent();
+            return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
 
         [Route("{paintingId}/materials/{materialId}")]
@@ -112,7 +116,7 @@ namespace ExhibitionsService.PL.Controllers
         public async Task<IActionResult> RemoveMaterial(int paintingId, int materialId)
         {
             await paintingService.RemoveMaterialAsync(paintingId, materialId);
-            return NoContent();
+            return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
 
         [Route("{paintingId}/tags")]
@@ -120,7 +124,7 @@ namespace ExhibitionsService.PL.Controllers
         public async Task<IActionResult> AddTag(int paintingId, [FromBody] int tagId)
         {
             await paintingService.AddTagAsync(paintingId, tagId);
-            return NoContent();
+            return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
 
         [Route("{paintingId}/tags/{tagId}")]
@@ -128,30 +132,23 @@ namespace ExhibitionsService.PL.Controllers
         public async Task<IActionResult> RemoveTag(int paintingId, int tagId)
         {
             await paintingService.RemoveTagAsync(paintingId, tagId);
-            return NoContent();
+            return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
 
         [Route("{paintingId}/likes")]
         [HttpPost]
         public async Task<IActionResult> AddLike(int paintingId, [FromBody] int profileId)
         {
-            await paintingService.AddLike(paintingId, profileId);
-            return NoContent();
+            await paintingService.AddLikeAsync(paintingId, profileId);
+            return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
 
         [Route("{paintingId}/likes/{profileId}")]
         [HttpDelete]
         public async Task<IActionResult> RemoveLike(int paintingId, int profileId)
         {
-            await paintingService.RemoveLike(paintingId, profileId);
-            return NoContent();
-        }
-
-        [Route("{paintingId}/likes")]
-        [HttpGet]
-        public async Task<IActionResult> LikesCount(int paintingId)
-        {
-            return new ObjectResult(await paintingService.LikesCount(paintingId));
+            await paintingService.RemoveLikeAsync(paintingId, profileId);
+            return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
     }
 }
