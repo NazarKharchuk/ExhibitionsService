@@ -2,8 +2,6 @@
 using ExhibitionsService.BLL.DTO;
 using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Interfaces;
-using ExhibitionsService.BLL.Services;
-using ExhibitionsService.PL.Models.Genre;
 using ExhibitionsService.PL.Models.HelperModel;
 using ExhibitionsService.PL.Models.Style;
 using Microsoft.AspNetCore.Mvc;
@@ -35,6 +33,14 @@ namespace ExhibitionsService.PL.Controllers
                     TotalCount = paginationResult.Item2
                 }
                 ));
+        }
+
+        [Route("~/api/all-styles")]
+        [HttpGet]
+        public async Task<IActionResult> GetAllStyles()
+        {
+            return new ObjectResult(ResponseModel<List<StyleModel>>.CoverSuccessResponse(
+                mapper.Map<List<StyleModel>>(await styleService.GetAllAsync())));
         }
 
         [Route("{id}")]

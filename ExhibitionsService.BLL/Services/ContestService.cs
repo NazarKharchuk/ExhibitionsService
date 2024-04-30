@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using ExhibitionsService.BLL.DTO;
+using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Infrastructure.Exceptions;
 using ExhibitionsService.BLL.Interfaces;
 using ExhibitionsService.DAL.Entities;
 using ExhibitionsService.DAL.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace ExhibitionsService.BLL.Services
@@ -19,7 +21,7 @@ namespace ExhibitionsService.BLL.Services
             mapper = _mapper;
         }
 
-        public async Task CreateAsync(ContestDTO entity)
+        public async Task<ContestDTO> CreateAsync(ContestDTO entity)
         {
             ValidateEntity(entity);
 
@@ -28,8 +30,9 @@ namespace ExhibitionsService.BLL.Services
 
             entity.ContestId = 0;
             entity.AddedDate = DateTime.Now;
-            await uow.Contests.CreateAsync(mapper.Map<Contest>(entity));
+            var savedEntity = await uow.Contests.CreateAsync(mapper.Map<Contest>(entity));
             await uow.SaveAsync();
+            return mapper.Map<ContestDTO>(savedEntity);
         }
 
         public async Task<ContestDTO> UpdateAsync(ContestDTO entity)
@@ -102,9 +105,76 @@ namespace ExhibitionsService.BLL.Services
             return mapper.Map<ContestDTO>(existingEntity);
         }
 
+        public async Task<ContestInfoDTO> GetByIdWithInfoAsync(int id)
+        {
+            var existingEntity = await CheckEntityPresence(id);
+
+            var allWithInfo = uow.Contests.GetAllContestsWithInfo();
+            var contest = allWithInfo.Where(c => c.ContestId == id).FirstOrDefault();
+
+            return mapper.Map<Contest, ContestInfoDTO>(contest);
+        }
+
         public async Task<List<ContestDTO>> GetAllAsync()
         {
             return mapper.Map<List<ContestDTO>>((await uow.Contests.GetAllAsync()).ToList());
+        }
+
+        public async Task<Tuple<List<ContestInfoDTO>, int>> GetPageContestInfoAsync(PaginationRequestDTO pagination)
+        {
+            var all = await uow.Contests.GetAllAsync();
+            int count = all.Count();
+            pagination.PageNumber ??= 1;
+            pagination.PageSize ??= 12;;
+            pagination.PageSize = Math.Min(pagination.PageSize.Value, 21);
+            if (pagination.PageNumber < 1 ||
+                pagination.PageNumber < 1 ||
+                (pagination.PageNumber > (int)Math.Ceiling((double)count / pagination.PageSize.Value) && count != 0))
+            {
+                throw new ValidationException("Не коректний номер або розмір сторінки.");
+            }
+
+            var allWithInfo = uow.Contests.GetAllContestsWithInfo();
+            allWithInfo = allWithInfo.Skip((int)((pagination.PageNumber - 1) * pagination.PageSize)).Take((int)pagination.PageSize);
+
+            var res = mapper.Map<List<ContestInfoDTO>>(await allWithInfo.ToListAsync());
+            return Tuple.Create(res, count);
+        }
+
+        public async Task AddTagAsync(int contestId, int tagId)
+        {
+            var contest = await CheckEntityPresence(contestId);
+
+            Tag? tag = await uow.Tags.GetByIdAsync(tagId);
+            if (tag == null) throw new EntityNotFoundException(typeof(TagDTO).Name, tagId);
+
+            var all = uow.Contests.GetAllContestsWithInfo();
+            var checkAvailability = all.Where(p =>
+                p.ContestId == contestId &&
+                p.Tags.Any(pl => pl.TagId == tagId));
+            if (checkAvailability.Any())
+                throw new ValidationException("Конкурс вже має цей тег.");
+
+            uow.Contests.AddItem(contest.Tags, tag);
+            await uow.SaveAsync();
+        }
+
+        public async Task RemoveTagAsync(int contestId, int tagId)
+        {
+            var contest = await CheckEntityPresence(contestId);
+
+            Tag? tag = await uow.Tags.GetByIdAsync(tagId);
+            if (tag == null) throw new EntityNotFoundException(typeof(TagDTO).Name, tagId);
+
+            var all = uow.Contests.GetAllContestsWithInfo();
+            var checkAvailability = all.Where(p =>
+                p.ContestId == contestId &&
+                p.Tags.Any(pl => pl.TagId == tagId));
+            if (!checkAvailability.Any())
+                throw new ValidationException("Конкурс не має цього тегу.");
+
+            uow.Contests.RemoveItem(checkAvailability.FirstOrDefault().Tags, tag);
+            await uow.SaveAsync();
         }
 
         public void Dispose()

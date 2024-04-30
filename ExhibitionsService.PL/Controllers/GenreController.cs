@@ -35,6 +35,14 @@ namespace ExhibitionsService.PL.Controllers
                 ));
         }
 
+        [Route("~/api/all-genres")]
+        [HttpGet]
+        public async Task<IActionResult> GetAllGenres()
+        {
+            return new ObjectResult(ResponseModel<List<GenreModel>>.CoverSuccessResponse(
+                mapper.Map<List<GenreModel>>(await genreService.GetAllAsync())));
+        }
+
         [Route("{id}")]
         [HttpGet]
         public async Task<IActionResult> GetGenre(int id)

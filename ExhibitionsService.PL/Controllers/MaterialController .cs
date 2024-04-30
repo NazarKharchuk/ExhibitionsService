@@ -35,6 +35,14 @@ namespace ExhibitionsService.PL.Controllers
                 ));
         }
 
+        [Route("~/api/all-materials")]
+        [HttpGet]
+        public async Task<IActionResult> GetAllMaterials()
+        {
+            return new ObjectResult(ResponseModel<List<MaterialModel>>.CoverSuccessResponse(
+                mapper.Map<List<MaterialModel>>(await materialService.GetAllAsync())));
+        }
+
         [Route("{id}")]
         [HttpGet]
         public async Task<IActionResult> GetMaterial(int id)

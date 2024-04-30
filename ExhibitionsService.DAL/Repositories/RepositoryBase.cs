@@ -1,6 +1,5 @@
 ﻿using ExhibitionsService.DAL.Context;
 using ExhibitionsService.DAL.Interfaces;
-using System.Linq.Expressions;
 
 namespace ExhibitionsService.DAL.Repositories
 {

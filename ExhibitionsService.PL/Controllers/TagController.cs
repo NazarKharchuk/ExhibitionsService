@@ -1,12 +1,15 @@
 ﻿using AutoMapper;
 using ExhibitionsService.BLL.DTO;
+using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Interfaces;
+using ExhibitionsService.PL.Models.HelperModel;
 using ExhibitionsService.PL.Models.Tag;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExhibitionsService.PL.Controllers
 {
     [ApiController]
+    [Route("api/tags")]
     public class TagController : ControllerBase
     {
         private readonly ITagService tagService;
@@ -18,29 +21,46 @@ namespace ExhibitionsService.PL.Controllers
             mapper = _mapper;
         }
 
-        [Route("api/tags")]
+        [Route("")]
         [HttpGet]
-        public async Task<IActionResult> GetTags()
+        public async Task<IActionResult> GetTags([FromQuery] PaginationRequestModel pagination)
         {
-            return new ObjectResult(mapper.Map<List<TagModel>>((await tagService.GetAllAsync()).ToList()));
+            var paginationResult = await tagService.GetPageAsync(mapper.Map<PaginationRequestDTO>(pagination));
+            return new ObjectResult(ResponseModel<PaginationResponseModel<TagModel>>.CoverSuccessResponse(
+                new PaginationResponseModel<TagModel>()
+                {
+                    PageContent = mapper.Map<List<TagModel>>(paginationResult.Item1),
+                    TotalCount = paginationResult.Item2
+                }
+                ));
         }
 
-        [Route("api/tags/{id}")]
+        [Route("~/api/all-tags")]
+        [HttpGet]
+        public async Task<IActionResult> GetAllTags()
+        {
+            return new ObjectResult(ResponseModel<List<TagModel>>.CoverSuccessResponse(
+                mapper.Map<List<TagModel>>(await tagService.GetAllAsync())));
+        }
+
+        [Route("{id}")]
         [HttpGet]
         public async Task<IActionResult> GetTag(int id)
         {
-            return new ObjectResult(mapper.Map<TagModel>(await tagService.GetByIdAsync(id)));
+            return new ObjectResult(ResponseModel<TagModel>.CoverSuccessResponse(
+                mapper.Map<TagModel>(await tagService.GetByIdAsync(id))
+                ));
         }
 
-        [Route("api/tags")]
+        [Route("")]
         [HttpPost]
         public async Task<IActionResult> PostTag([FromBody] TagCreateModel entity)
         {
             await tagService.CreateAsync(mapper.Map<TagDTO>(entity));
-            return NoContent();
+            return new ObjectResult(ResponseModel<TagModel>.CoverSuccessResponse(null));
         }
 
-        [Route("api/tags/{id}")]
+        [Route("{id}")]
         [HttpPut]
         public async Task<IActionResult> PutTag(int id, [FromBody] TagUpdateModel entity)
         {
@@ -48,15 +68,15 @@ namespace ExhibitionsService.PL.Controllers
                 throw new ArgumentException("Ідентифікатор, вказаний в URL, не відповідає ідентифікатору у тілі запиту.");
 
             await tagService.UpdateAsync(mapper.Map<TagDTO>(entity));
-            return NoContent();
+            return new ObjectResult(ResponseModel<TagModel>.CoverSuccessResponse(null));
         }
 
-        [Route("api/tags/{id}")]
+        [Route("{id}")]
         [HttpDelete]
         public async Task<IActionResult> DeleteTag(int id)
         {
             await tagService.DeleteAsync(id);
-            return NoContent();
+            return new ObjectResult(ResponseModel<TagModel>.CoverSuccessResponse(null));
         }
     }
 }
