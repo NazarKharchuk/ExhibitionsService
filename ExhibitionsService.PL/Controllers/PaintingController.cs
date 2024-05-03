@@ -23,9 +23,11 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("")]
         [HttpGet]
-        public async Task<IActionResult> GetPaintings([FromQuery] PaginationRequestModel pagination)
+        public async Task<IActionResult> GetPaintings([FromQuery] PaintingsFiltrationPaginationRequestModel filters)
         {
-            var paginationResult = await paintingService.GetPagePaintingInfoAsync(mapper.Map<PaginationRequestDTO>(pagination), HttpContext.User);
+            var paginationResult = await paintingService.GetPagePaintingInfoAsync(
+                mapper.Map<PaintingsFiltrationPaginationRequestDTO>(filters),
+                HttpContext.User);
             return new ObjectResult(ResponseModel<PaginationResponseModel<PaintingInfoModel>>.CoverSuccessResponse(
                 new PaginationResponseModel<PaintingInfoModel>()
                 {

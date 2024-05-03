@@ -1,5 +1,6 @@
 ﻿using ExhibitionsService.BLL.DTO;
 using ExhibitionsService.BLL.DTO.HelperDTO;
+using ExhibitionsService.DAL.Entities;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 
@@ -23,8 +24,11 @@ namespace ExhibitionsService.BLL.Interfaces
         Task RemoveTagAsync(int paintingId, int tagId);
 
         Task<PaintingInfoDTO> GetByIdWithInfoAsync(int id, ClaimsPrincipal claims);
-        Task<Tuple<List<PaintingInfoDTO>, int>> GetPagePaintingInfoAsync(PaginationRequestDTO pagination, ClaimsPrincipal claims);
-        
+        Task<Tuple<List<PaintingInfoDTO>, int>> GetPagePaintingInfoAsync(
+            PaintingsFiltrationPaginationRequestDTO filters,
+            ClaimsPrincipal claims);
+
+
         Task AddLikeAsync(int paintingId, int profileId);
         Task RemoveLikeAsync(int paintingId, int profileId);
     }

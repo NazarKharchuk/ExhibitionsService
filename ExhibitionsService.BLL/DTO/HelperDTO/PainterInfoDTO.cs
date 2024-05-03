@@ -1,11 +1,7 @@
 ﻿namespace ExhibitionsService.BLL.DTO.HelperDTO
 {
-    public class PainterInfoDTO
+    public class PainterInfoDTO : PainterDTO
     {
-        public int PainterId { get; set; }
-        public string Pseudonym { get; set; }
-        public string Description { get; set; }
-        public int ProfileId { get; set; }
         public string FirstName { get; set; }
         public string? LastName { get; set; }
         public DateTime JoiningDate { get; set; }

@@ -9,6 +9,7 @@ namespace ExhibitionsService.PL.Mapping.Helper
         public FilterPaginationModelsProfiles()
         {
             CreateMap<PaginationRequestModel, PaginationRequestDTO>();
+            CreateMap<PaintingsFiltrationPaginationRequestModel, PaintingsFiltrationPaginationRequestDTO>();
         }
     }
 }

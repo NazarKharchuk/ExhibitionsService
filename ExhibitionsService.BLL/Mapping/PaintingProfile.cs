@@ -11,6 +11,7 @@ namespace ExhibitionsService.BLL.Mapping
         {
             CreateMap<Painting, PaintingDTO>().ReverseMap();
             CreateMap<Painting, PaintingInfoDTO>()
+                    .ForMember(dest => dest.PainterId, opt => opt.MapFrom(src => src.Painter.PainterId))
                     .ForMember(dest => dest.Painter, opt => opt.MapFrom(src => src.Painter))
                     .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => src.Genres))
                     .ForMember(dest => dest.Styles, opt => opt.MapFrom(src => src.Styles))

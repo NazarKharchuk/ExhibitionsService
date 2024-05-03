@@ -251,27 +251,44 @@ namespace ExhibitionsService.BLL.Services
                         profileId == null ? null : src.PaintingLikes.Any(pl => pl.ProfileId == profileId)));
         }
 
-        public async Task<Tuple<List<PaintingInfoDTO>, int>> GetPagePaintingInfoAsync(PaginationRequestDTO pagination, ClaimsPrincipal claims)
+        public async Task<Tuple<List<PaintingInfoDTO>, int>> GetPagePaintingInfoAsync(
+            PaintingsFiltrationPaginationRequestDTO filters,
+            ClaimsPrincipal claims)
         {
-            var all = await uow.Paintings.GetAllAsync();
-            int count = all.Count();
-            if (pagination.PageNumber == null) pagination.PageNumber = 1;
-            if (pagination.PageSize == null) { pagination.PageSize = 12; };
+            var paintingsWithInfo = await uow.Paintings.GetAllPaintingsWithInfoAsync();
+
+            if (filters.PainterId != null)
+            {
+                Painter? existingPainter = await uow.Painters.GetByIdAsync((int)filters.PainterId);
+                if (existingPainter == null) throw new EntityNotFoundException(typeof(PainterDTO).Name, (int)filters.PainterId);
+                paintingsWithInfo = paintingsWithInfo.Where(p => p.PainterId == filters.PainterId);
+            }
+
+            return await PaintingInfoResultAsync(paintingsWithInfo, claims,
+                new PaginationRequestDTO() { PageNumber = filters.PageNumber, PageSize = filters.PageSize });
+        }
+
+        private async Task<Tuple<List<PaintingInfoDTO>, int>> PaintingInfoResultAsync(
+            IQueryable<Painting> paintingsWithInfo,
+            ClaimsPrincipal claims,
+            PaginationRequestDTO pagination)
+        {
+            int count = paintingsWithInfo.Count();
+            pagination.PageNumber ??= 1;
+            pagination.PageSize ??= 12;
             pagination.PageSize = Math.Min(pagination.PageSize.Value, 21);
-            if (pagination.PageNumber < 1 ||
-                pagination.PageNumber < 1 ||
+            if (pagination.PageNumber < 1 || pagination.PageNumber < 1 ||
                 (pagination.PageNumber > (int)Math.Ceiling((double)count / pagination.PageSize.Value) && count != 0))
             {
                 throw new ValidationException("Не коректний номер або розмір сторінки.");
             }
 
-            var allWithInfo = await uow.Paintings.GetAllPaintingsWithInfoAsync();
-            allWithInfo = allWithInfo.Skip((int)((pagination.PageNumber - 1) * pagination.PageSize)).Take((int)pagination.PageSize);
+            paintingsWithInfo = paintingsWithInfo.Skip((int)((pagination.PageNumber - 1) * pagination.PageSize)).Take((int)pagination.PageSize);
 
             string? profileIdClaim = claims.FindFirst("ProfileId")?.Value;
             int? profileId = profileIdClaim != null ? int.Parse(profileIdClaim) : null;
 
-            var res = (await allWithInfo.ToListAsync())
+            var res = (await paintingsWithInfo.ToListAsync())
                 .Select(p => mapper.Map<Painting, PaintingInfoDTO>(p, opt =>
                     opt.AfterMap((src, dest) => dest.IsLiked =
                         profileId == null ? null : src.PaintingLikes.Any(pl => pl.ProfileId == profileId)))
@@ -329,7 +346,7 @@ namespace ExhibitionsService.BLL.Services
 
         private void ValidateEntity(PaintingDTO entity)
         {
-            if (entity.Name.IsNullOrEmpty() || entity.Description.Length > 50)
+            if (entity.Name.IsNullOrEmpty() || entity.Name.Length > 50)
                 throw new ValidationException(entity.GetType().Name, nameof(entity.Name));
 
             if (entity.Description.IsNullOrEmpty() || entity.Description.Length > 500)

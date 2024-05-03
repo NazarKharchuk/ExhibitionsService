@@ -34,6 +34,7 @@ namespace ExhibitionsService.DAL.Repositories
                 .Include(p => p.Tags)
                 .Include(p => p.ExhibitionApplications)
                 .Include(p => p.ContestApplications)
+                    .ThenInclude(ca => ca.Voters)
                 .AsQueryable();
         }
 
