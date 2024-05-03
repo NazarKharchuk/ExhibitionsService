@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
 using ExhibitionsService.BLL.DTO;
+using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Interfaces;
 using ExhibitionsService.PL.Models.ContestApplication;
+using ExhibitionsService.PL.Models.HelperModel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExhibitionsService.PL.Controllers
@@ -21,71 +24,88 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("")]
         [HttpGet]
-        public async Task<IActionResult> GetContestApplications()
+        public async Task<IActionResult> GetContestApplications([FromQuery] PaginationRequestModel pagination)
         {
-            return new ObjectResult(mapper.Map<List<ContestApplicationModel>>((await contestApplicationService.GetAllAsync()).ToList()));
+            var paginationResult = await contestApplicationService.GetPageAsync(mapper.Map<PaginationRequestDTO>(pagination));
+            return new ObjectResult(ResponseModel<PaginationResponseModel<ContestApplicationModel>>.CoverSuccessResponse(
+                new PaginationResponseModel<ContestApplicationModel>()
+                {
+                    PageContent = mapper.Map<List<ContestApplicationModel>>(paginationResult.Item1),
+                    TotalCount = paginationResult.Item2
+                }
+                ));
         }
 
         [Route("{id}")]
         [HttpGet]
         public async Task<IActionResult> GetContestApplication(int id)
         {
-            return new ObjectResult(mapper.Map<ContestApplicationModel>(await contestApplicationService.GetByIdAsync(id)));
+            return new ObjectResult(ResponseModel<ContestApplicationModel>.CoverSuccessResponse(
+                mapper.Map<ContestApplicationModel>(await contestApplicationService.GetByIdAsync(id))
+                ));
         }
 
         [Route("")]
         [HttpPost]
+        [Authorize(Roles = "Painter")]
         public async Task<IActionResult> PostContestApplication([FromBody] ContestApplicationCreateModel entity)
         {
-            await contestApplicationService.CreateAsync(mapper.Map<ContestApplicationDTO>(entity));
-            return NoContent();
+            await contestApplicationService.CreateAsync(mapper.Map<ContestApplicationDTO>(entity), HttpContext.User);
+            return new ObjectResult(ResponseModel<ContestApplicationModel>.CoverSuccessResponse(null));
         }
 
         [Route("{id}/confirm")]
         [HttpPut]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ConfirmContestApplication(int id)
         {
             await contestApplicationService.ConfirmApplicationAsync(id);
-            return NoContent();
+            return new ObjectResult(ResponseModel<ContestApplicationModel>.CoverSuccessResponse(null));
         }
 
         [Route("{id}/confirm_winning")]
         [HttpPut]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ConfirmWinningApplication(int id)
         {
             await contestApplicationService.ConfirmWinningAsync(id);
-            return NoContent();
+            return new ObjectResult(ResponseModel<ContestApplicationModel>.CoverSuccessResponse(null));
         }
 
         [Route("{id}")]
         [HttpDelete]
+        [Authorize(Roles = "Painter, Admin")]
         public async Task<IActionResult> DeleteContestApplication(int id)
         {
-            await contestApplicationService.DeleteAsync(id);
-            return NoContent();
+            await contestApplicationService.DeleteAsync(id, HttpContext.User);
+            return new ObjectResult(ResponseModel<ContestApplicationModel>.CoverSuccessResponse(null));
         }
 
         [Route("{applicationId}/votes")]
         [HttpPost]
-        public async Task<IActionResult> AddVote(int applicationId, [FromBody] int profileId)
+        [Authorize]
+        public async Task<IActionResult> AddVote(int applicationId)
         {
-            await contestApplicationService.AddVoteAsync(applicationId, profileId);
-            return NoContent();
-        }
-
-        [Route("{applicationId}/votes/{profileId}")]
-        [HttpDelete]
-        public async Task<IActionResult> RemoveVote(int applicationId, int profileId)
-        {
-            await contestApplicationService.RemoveVoteAsync(applicationId, profileId);
-            return NoContent();
+            await contestApplicationService.AddVoteAsync(applicationId, HttpContext.User);
+            return new ObjectResult(ResponseModel<ContestApplicationModel>.CoverSuccessResponse(null));
         }
 
         [Route("{applicationId}/votes")]
-        [HttpGet]
-        public async Task<IActionResult> VotesCount(int applicationId)
+        [HttpDelete]
+        [Authorize]
+        public async Task<IActionResult> RemoveVote(int applicationId)
         {
-            return new ObjectResult(await contestApplicationService.VotesCountAsync(applicationId));
+            await contestApplicationService.RemoveVoteAsync(applicationId, HttpContext.User);
+            return new ObjectResult(ResponseModel<ContestApplicationModel>.CoverSuccessResponse(null));
+        }
+
+        [Route("determine-winners")]
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DetermineWinners()
+        {
+            await contestApplicationService.DetermineWinners();
+            return new ObjectResult(ResponseModel<ContestApplicationModel>.CoverSuccessResponse(null));
         }
     }
 }

@@ -1,4 +1,3 @@
-
 using ExhibitionsService.BLL.Infrastructure.SeedData;
 using ExhibitionsService.BLL.Interfaces;
 using ExhibitionsService.BLL.Mapping;
@@ -7,6 +6,7 @@ using ExhibitionsService.DAL.Context;
 using ExhibitionsService.DAL.Entities;
 using ExhibitionsService.DAL.Interfaces;
 using ExhibitionsService.DAL.Repositories;
+using ExhibitionsService.PL.BackgroundTasks;
 using ExhibitionsService.PL.Mapping.Contest;
 using ExhibitionsService.PL.Mapping.ContestApplication;
 using ExhibitionsService.PL.Mapping.Exhibition;
@@ -84,7 +84,8 @@ namespace ExhibitionsService.PL
                 typeof(UserProfilesProfiles), typeof(AuthorizationProfiles), typeof(PaintingRatingModelsProfiles),
                 typeof(ExhibitionModelsProfiles), typeof(ExhibitionApplicationModelsProfiles), typeof(ContestModelsProfiles),
                 typeof(ContestApplicationModelsProfiles), typeof(GenreModelsProfiles), typeof(StyleModelsProfiles),
-                typeof(MaterialModelsProfiles), typeof(FilterPaginationModelsProfiles));
+                typeof(MaterialModelsProfiles), typeof(FilterPaginationModelsProfiles), typeof(ContestApplicationInfoModelProfiles));
+            builder.Services.AddHostedService<ContestWinnerDeterminationService>();
 
             builder.Services.AddAuthentication(options =>
             {

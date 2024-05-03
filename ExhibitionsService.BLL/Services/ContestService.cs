@@ -7,6 +7,7 @@ using ExhibitionsService.DAL.Entities;
 using ExhibitionsService.DAL.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 
 namespace ExhibitionsService.BLL.Services
 {
@@ -29,7 +30,7 @@ namespace ExhibitionsService.BLL.Services
                 throw new ValidationException(entity.GetType().Name, nameof(entity.StartDate));
 
             entity.ContestId = 0;
-            entity.AddedDate = DateTime.Now;
+            entity.AddedDate = DateTime.Now.Date;
             var savedEntity = await uow.Contests.CreateAsync(mapper.Map<Contest>(entity));
             await uow.SaveAsync();
             return mapper.Map<ContestDTO>(savedEntity);
@@ -175,6 +176,115 @@ namespace ExhibitionsService.BLL.Services
 
             uow.Contests.RemoveItem(checkAvailability.FirstOrDefault().Tags, tag);
             await uow.SaveAsync();
+        }
+
+        public async Task<Tuple<List<ContestApplicationInfoDTO>, int>> GetPageContestApplicationInfoAsync
+            (PaginationRequestDTO pagination, ClaimsPrincipal claims, int contestId)
+        {
+            var contest = await CheckEntityPresence(contestId);
+
+            var paintingsWithInfo = await uow.Paintings.GetAllPaintingsWithInfoAsync();
+
+            if (contest.NeedConfirmation) paintingsWithInfo = paintingsWithInfo.Where(p => p.ContestApplications.
+                Any(ca => ca.ContestId == contestId && ca.IsConfirmed));
+            else paintingsWithInfo = paintingsWithInfo.Where(p => p.ContestApplications.
+                Any(ca => ca.ContestId == contestId));
+
+            if (contest.EndDate < DateTime.Now) paintingsWithInfo = paintingsWithInfo.
+                    OrderByDescending(p => p.ContestApplications.First(ca => ca.ContestId == contestId).Voters.Count());
+
+            return await ContestApplicationInfoResultAsync(paintingsWithInfo, claims, pagination, contestId);
+        }
+
+        public async Task<Tuple<List<ContestApplicationInfoDTO>, int>> GetPageContestNotConfirmedApplicationInfoAsync
+            (PaginationRequestDTO pagination, ClaimsPrincipal claims, int contestId)
+        {
+            var contest = await CheckEntityPresence(contestId);
+
+            var paintingsWithInfo = await uow.Paintings.GetAllPaintingsWithInfoAsync();
+
+            paintingsWithInfo = paintingsWithInfo.Where(p => p.ContestApplications.
+                Any(ca => ca.ContestId == contestId && ca.IsConfirmed == false));
+
+            return await ContestApplicationInfoResultAsync(paintingsWithInfo, claims, pagination, contestId);
+        }
+
+        public async Task<Tuple<List<ContestApplicationInfoDTO>, int>> GetPainterContestSubmissionsAsync
+            (PaginationRequestDTO pagination, ClaimsPrincipal claims, int contestId)
+        {
+            var contest = await CheckEntityPresence(contestId);
+
+            var paintingsWithInfo = await uow.Paintings.GetAllPaintingsWithInfoAsync();
+
+            string? painterIdClaim = claims.FindFirst("PainterId")?.Value;
+            int? painterId = painterIdClaim != null ? int.Parse(painterIdClaim) : null;
+            if (painterId == null) throw new ValidationException("Користувач не є художником");
+
+            paintingsWithInfo = paintingsWithInfo.Where(p => p.PainterId == painterId &&
+                p.ContestApplications.Any(ca => ca.ContestId == contestId));
+
+            return await ContestApplicationInfoResultAsync(paintingsWithInfo, claims, pagination, contestId);
+        }
+
+        public async Task<Tuple<List<ContestApplicationInfoDTO>, int>> GetUserContestVotesAsync
+            (PaginationRequestDTO pagination, ClaimsPrincipal claims, int contestId)
+        {
+            var contest = await CheckEntityPresence(contestId);
+
+            var paintingsWithInfo = await uow.Paintings.GetAllPaintingsWithInfoAsync();
+
+            string? profileIdClaim = claims.FindFirst("ProfileId")?.Value;
+            int? profileId = profileIdClaim != null ? int.Parse(profileIdClaim) : null;
+            if (profileId == null) throw new ValidationException("Користувач не авторизований");
+
+            paintingsWithInfo = paintingsWithInfo.Where(p => p.ContestApplications.Any(
+                ca => ca.ContestId == contestId &&
+                ca.Voters.Any(p => p.ProfileId == profileId)));
+
+            return await ContestApplicationInfoResultAsync(paintingsWithInfo, claims, pagination, contestId);
+        }
+
+        private async Task<Tuple<List<ContestApplicationInfoDTO>, int>> ContestApplicationInfoResultAsync
+            (IQueryable<Painting> paintingsWithInfo, ClaimsPrincipal claims, PaginationRequestDTO pagination, int contestId)
+        {
+            int count = paintingsWithInfo.Count();
+            pagination.PageNumber ??= 1;
+            pagination.PageSize ??= 12;
+            pagination.PageSize = Math.Min(pagination.PageSize.Value, 21);
+            if (pagination.PageNumber < 1 || pagination.PageNumber < 1 ||
+                (pagination.PageNumber > (int)Math.Ceiling((double)count / pagination.PageSize.Value) && count != 0))
+            {
+                throw new ValidationException("Не коректний номер або розмір сторінки.");
+            }
+
+            paintingsWithInfo = paintingsWithInfo.Skip((int)((pagination.PageNumber - 1) * pagination.PageSize)).Take((int)pagination.PageSize);
+
+            string? profileIdClaim = claims.FindFirst("ProfileId")?.Value;
+            int? profileId = profileIdClaim != null ? int.Parse(profileIdClaim) : null;
+
+            var res = (await paintingsWithInfo.ToListAsync())
+                .Select(p =>
+                {
+                    var application = p.ContestApplications.First(ca => ca.PaintingId == p.PaintingId && ca.ContestId == contestId);
+
+                    var paintingInfoDTO = mapper.Map<Painting, PaintingInfoDTO>(p, opt =>
+                        opt.AfterMap((src, dest) =>
+                            dest.IsLiked = profileId == null
+                                ? null
+                                : src.PaintingLikes.Any(pl => pl.ProfileId == profileId)));
+
+                    return new ContestApplicationInfoDTO
+                    {
+                        ApplicationId = application.ApplicationId,
+                        IsConfirmed = application.IsConfirmed,
+                        IsWon = application.IsWon,
+                        ContestId = contestId,
+                        PaintingId = p.PaintingId,
+                        Painting = paintingInfoDTO,
+                        VotesCount = application.Voters.Count(),
+                    };
+                }).ToList();
+            return Tuple.Create(res, count);
         }
 
         public void Dispose()

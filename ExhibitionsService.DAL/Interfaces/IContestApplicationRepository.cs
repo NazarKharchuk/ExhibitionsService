@@ -6,6 +6,6 @@ namespace ExhibitionsService.DAL.Interfaces
     {
         void AddVote(ContestApplication application, UserProfile profile);
         void RemoveVote(int applicationId, int profileId);
-        Task<IQueryable<ContestApplication>> FindApplicationsWithVoters(Func<ContestApplication, bool> predicate);
+        IQueryable<ContestApplication> GetAllApplicationsWithinfo();
     }
 }

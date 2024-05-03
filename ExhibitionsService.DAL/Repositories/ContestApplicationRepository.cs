@@ -26,9 +26,9 @@ namespace ExhibitionsService.DAL.Repositories
             }
         }
 
-        public async Task<IQueryable<ContestApplication>> FindApplicationsWithVoters(Func<ContestApplication, bool> predicate)
+        public IQueryable<ContestApplication> GetAllApplicationsWithinfo()
         {
-            return db.ContestApplications.Include(ca => ca.Voters).Where(predicate).AsQueryable();
+            return db.ContestApplications.Include(ca => ca.Voters).Include(ca => ca.Contest);
         }
     }
 }

@@ -15,6 +15,7 @@ namespace ExhibitionsService.DAL.Repositories
         {
             return db.Contests
                 .Include(c => c.Applications)
+                    .ThenInclude(ca => ca.Voters)
                 .Include(c => c.Tags);
         }
 

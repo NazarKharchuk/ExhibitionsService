@@ -1,5 +1,6 @@
 ﻿using ExhibitionsService.BLL.DTO;
 using ExhibitionsService.BLL.DTO.HelperDTO;
+using System.Security.Claims;
 
 namespace ExhibitionsService.BLL.Interfaces
 {
@@ -14,5 +15,14 @@ namespace ExhibitionsService.BLL.Interfaces
         Task<Tuple<List<ContestInfoDTO>, int>> GetPageContestInfoAsync(PaginationRequestDTO pagination);
         Task AddTagAsync(int contestId, int tagId);
         Task RemoveTagAsync(int contestId, int tagId);
+
+        Task<Tuple<List<ContestApplicationInfoDTO>, int>> GetPageContestApplicationInfoAsync
+            (PaginationRequestDTO pagination, ClaimsPrincipal claims, int contestId);
+        Task<Tuple<List<ContestApplicationInfoDTO>, int>> GetPageContestNotConfirmedApplicationInfoAsync
+            (PaginationRequestDTO pagination, ClaimsPrincipal claims, int contestId);
+        Task<Tuple<List<ContestApplicationInfoDTO>, int>> GetPainterContestSubmissionsAsync
+            (PaginationRequestDTO pagination, ClaimsPrincipal claims, int contestId);
+        Task<Tuple<List<ContestApplicationInfoDTO>, int>> GetUserContestVotesAsync
+            (PaginationRequestDTO pagination, ClaimsPrincipal claims, int contestId);
     }
 }

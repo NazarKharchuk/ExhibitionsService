@@ -41,6 +41,11 @@ namespace ExhibitionsService.PL.Middlewares
                         statusCode = (int)HttpStatusCode.BadRequest;
                         break;
                     }
+                case InsufficientPermissionsException:
+                    {
+                        statusCode = (int)HttpStatusCode.Forbidden;
+                        break;
+                    }
                 case ArgumentException:
                     {
                         statusCode = (int)HttpStatusCode.BadRequest;

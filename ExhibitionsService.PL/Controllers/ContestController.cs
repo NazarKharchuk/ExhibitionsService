@@ -4,6 +4,7 @@ using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Interfaces;
 using ExhibitionsService.PL.Models.Contest;
 using ExhibitionsService.PL.Models.HelperModel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExhibitionsService.PL.Controllers
@@ -46,6 +47,7 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("")]
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PostContest([FromBody] ContestCreateModel entity)
         {
             var savedModel = await contestService.CreateAsync(mapper.Map<ContestDTO>(entity));
@@ -54,6 +56,7 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("{id}")]
         [HttpPut]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutContest(int id, [FromBody] ContestUpdateModel entity)
         {
             if (id != entity.ContestId)
@@ -65,6 +68,7 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("{id}")]
         [HttpDelete]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteContest(int id)
         {
             await contestService.DeleteAsync(id);
@@ -73,6 +77,7 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("{contestId}/tags")]
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddTag(int contestId, [FromBody] int tagId)
         {
             await contestService.AddTagAsync(contestId, tagId);
@@ -81,10 +86,78 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("{contestId}/tags/{tagId}")]
         [HttpDelete]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RemoveTag(int contestId, int tagId)
         {
             await contestService.RemoveTagAsync(contestId, tagId);
             return new ObjectResult(ResponseModel<ContestModel>.CoverSuccessResponse(null));
+        }
+
+        [Route("{contestId}/paintings")]
+        [HttpGet]
+        public async Task<IActionResult> GetPageContestApplicationInfo(int contestId, [FromQuery] PaginationRequestModel pagination)
+        {
+            var paginationResult = await contestService.GetPageContestApplicationInfoAsync(
+                mapper.Map<PaginationRequestDTO>(pagination),
+                HttpContext.User, contestId);
+            return new ObjectResult(ResponseModel<PaginationResponseModel<ContestApplicationInfoModel>>.CoverSuccessResponse(
+                new PaginationResponseModel<ContestApplicationInfoModel>()
+                {
+                    PageContent = mapper.Map<List<ContestApplicationInfoModel>>(paginationResult.Item1),
+                    TotalCount = paginationResult.Item2
+                }
+                ));
+        }
+
+        [Route("{contestId}/not-confirmed-paintings")]
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetPageContestNotConfirmedApplicationInfo(int contestId, [FromQuery] PaginationRequestModel pagination)
+        {
+            var paginationResult = await contestService.GetPageContestNotConfirmedApplicationInfoAsync(
+                mapper.Map<PaginationRequestDTO>(pagination),
+                HttpContext.User, contestId);
+            return new ObjectResult(ResponseModel<PaginationResponseModel<ContestApplicationInfoModel>>.CoverSuccessResponse(
+                new PaginationResponseModel<ContestApplicationInfoModel>()
+                {
+                    PageContent = mapper.Map<List<ContestApplicationInfoModel>>(paginationResult.Item1),
+                    TotalCount = paginationResult.Item2
+                }
+                ));
+        }
+
+        [Route("{contestId}/submissions")]
+        [HttpGet]
+        [Authorize(Roles = "Painter")]
+        public async Task<IActionResult> GetPainterContestSubmissions(int contestId, [FromQuery] PaginationRequestModel pagination)
+        {
+            var paginationResult = await contestService.GetPainterContestSubmissionsAsync(
+                mapper.Map<PaginationRequestDTO>(pagination),
+                HttpContext.User, contestId);
+            return new ObjectResult(ResponseModel<PaginationResponseModel<ContestApplicationInfoModel>>.CoverSuccessResponse(
+                new PaginationResponseModel<ContestApplicationInfoModel>()
+                {
+                    PageContent = mapper.Map<List<ContestApplicationInfoModel>>(paginationResult.Item1),
+                    TotalCount = paginationResult.Item2
+                }
+                ));
+        }
+
+        [Route("{contestId}/votes")]
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> GetUserContestVotes(int contestId, [FromQuery] PaginationRequestModel pagination)
+        {
+            var paginationResult = await contestService.GetUserContestVotesAsync(
+                mapper.Map<PaginationRequestDTO>(pagination),
+                HttpContext.User, contestId);
+            return new ObjectResult(ResponseModel<PaginationResponseModel<ContestApplicationInfoModel>>.CoverSuccessResponse(
+                new PaginationResponseModel<ContestApplicationInfoModel>()
+                {
+                    PageContent = mapper.Map<List<ContestApplicationInfoModel>>(paginationResult.Item1),
+                    TotalCount = paginationResult.Item2
+                }
+                ));
         }
     }
 }
