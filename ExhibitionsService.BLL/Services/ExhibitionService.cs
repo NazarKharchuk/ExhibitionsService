@@ -1,10 +1,13 @@
 ﻿using AutoMapper;
 using ExhibitionsService.BLL.DTO;
+using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Infrastructure.Exceptions;
 using ExhibitionsService.BLL.Interfaces;
 using ExhibitionsService.DAL.Entities;
 using ExhibitionsService.DAL.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 
 namespace ExhibitionsService.BLL.Services
 {
@@ -19,14 +22,15 @@ namespace ExhibitionsService.BLL.Services
             mapper = _mapper;
         }
 
-        public async Task CreateAsync(ExhibitionDTO entity)
+        public async Task<ExhibitionDTO> CreateAsync(ExhibitionDTO entity)
         {
             ValidateEntity(entity);
 
             entity.ExhibitionId = 0;
-            entity.AddedDate = DateTime.Now;
-            await uow.Exhibitions.CreateAsync(mapper.Map<Exhibition>(entity));
+            entity.AddedDate = DateTime.Now.Date;
+            var savedEntity = await uow.Exhibitions.CreateAsync(mapper.Map<Exhibition>(entity));
             await uow.SaveAsync();
+            return mapper.Map<ExhibitionDTO>(savedEntity);
         }
 
         public async Task<ExhibitionDTO> UpdateAsync(ExhibitionDTO entity)
@@ -69,6 +73,159 @@ namespace ExhibitionsService.BLL.Services
         public async Task<List<ExhibitionDTO>> GetAllAsync()
         {
             return mapper.Map<List<ExhibitionDTO>>((await uow.Exhibitions.GetAllAsync()).ToList());
+        }
+
+        public async Task<ExhibitionInfoDTO> GetByIdWithInfoAsync(int id)
+        {
+            var existingEntity = await CheckEntityPresence(id);
+
+            var allWithInfo = uow.Exhibitions.GetAllExhibitionsWithInfo();
+            var exhibition = allWithInfo.Where(e => e.ExhibitionId == id).FirstOrDefault();
+
+            return mapper.Map<Exhibition, ExhibitionInfoDTO>(exhibition);
+        }
+
+        public async Task<Tuple<List<ExhibitionInfoDTO>, int>> GetPageExhibitionInfoAsync(PaginationRequestDTO pagination)
+        {
+            var all = await uow.Exhibitions.GetAllAsync();
+            int count = all.Count();
+            pagination.PageNumber ??= 1;
+            pagination.PageSize ??= 12;
+            pagination.PageSize = Math.Min(pagination.PageSize.Value, 21);
+            if (pagination.PageNumber < 1 ||
+                pagination.PageNumber < 1 ||
+                (pagination.PageNumber > (int)Math.Ceiling((double)count / pagination.PageSize.Value) && count != 0))
+            {
+                throw new ValidationException("Не коректний номер або розмір сторінки.");
+            }
+
+            var allWithInfo = uow.Exhibitions.GetAllExhibitionsWithInfo();
+            allWithInfo = allWithInfo.Skip((int)((pagination.PageNumber - 1) * pagination.PageSize)).Take((int)pagination.PageSize);
+
+            var res = mapper.Map<List<ExhibitionInfoDTO>>(await allWithInfo.ToListAsync());
+            return Tuple.Create(res, count);
+        }
+
+        public async Task AddTagAsync(int exhibitionId, int tagId)
+        {
+            var exhibition = await CheckEntityPresence(exhibitionId);
+
+            Tag? tag = await uow.Tags.GetByIdAsync(tagId);
+            if (tag == null) throw new EntityNotFoundException(typeof(TagDTO).Name, tagId);
+
+            var all = uow.Exhibitions.GetAllExhibitionsWithInfo();
+            var checkAvailability = all.Where(e =>
+                e.ExhibitionId == exhibitionId &&
+                e.Tags.Any(t => t.TagId == tagId));
+            if (checkAvailability.Any())
+                throw new ValidationException("Виствка вже має цей тег.");
+
+            uow.Exhibitions.AddItem(exhibition.Tags, tag);
+            await uow.SaveAsync();
+        }
+
+        public async Task RemoveTagAsync(int exhibitionId, int tagId)
+        {
+            var exhibition = await CheckEntityPresence(exhibitionId);
+
+            Tag? tag = await uow.Tags.GetByIdAsync(tagId);
+            if (tag == null) throw new EntityNotFoundException(typeof(TagDTO).Name, tagId);
+
+            var all = uow.Exhibitions.GetAllExhibitionsWithInfo();
+            var checkAvailability = all.Where(e =>
+                e.ExhibitionId == exhibitionId &&
+                e.Tags.Any(t => t.TagId == tagId));
+            if (!checkAvailability.Any())
+                throw new ValidationException("Виставка не має цього тегу.");
+
+            uow.Exhibitions.RemoveItem(checkAvailability.FirstOrDefault().Tags, tag);
+            await uow.SaveAsync();
+        }
+
+        public async Task<Tuple<List<ExhibitionApplicationInfoDTO>, int>> GetPageExhibitionApplicationInfoAsync
+            (PaginationRequestDTO pagination, ClaimsPrincipal claims, int exhibitionId)
+        {
+            var exhibition = await CheckEntityPresence(exhibitionId);
+
+            var paintingsWithInfo = await uow.Paintings.GetAllPaintingsWithInfoAsync();
+
+            if (exhibition.NeedConfirmation) paintingsWithInfo = paintingsWithInfo.Where(p => p.ExhibitionApplications.
+                Any(ea => ea.ExhibitionId == exhibitionId && ea.IsConfirmed));
+            else paintingsWithInfo = paintingsWithInfo.Where(p => p.ExhibitionApplications.
+                Any(ea => ea.ExhibitionId == exhibitionId));
+
+            return await ExhibitionApplicationInfoResultAsync(paintingsWithInfo, claims, pagination, exhibitionId);
+        }
+
+        public async Task<Tuple<List<ExhibitionApplicationInfoDTO>, int>> GetPageExhibitionNotConfirmedApplicationInfoAsync
+            (PaginationRequestDTO pagination, ClaimsPrincipal claims, int exhibitionId)
+        {
+            var exhibition = await CheckEntityPresence(exhibitionId);
+
+            var paintingsWithInfo = await uow.Paintings.GetAllPaintingsWithInfoAsync();
+
+            paintingsWithInfo = paintingsWithInfo.Where(p => p.ExhibitionApplications.
+                Any(ea => ea.ExhibitionId == exhibitionId && ea.IsConfirmed == false));
+
+            return await ExhibitionApplicationInfoResultAsync(paintingsWithInfo, claims, pagination, exhibitionId);
+        }
+
+        public async Task<Tuple<List<ExhibitionApplicationInfoDTO>, int>> GetPainterExhibitionSubmissionsAsync
+            (PaginationRequestDTO pagination, ClaimsPrincipal claims, int exhibitionId)
+        {
+            var exhibition = await CheckEntityPresence(exhibitionId);
+
+            var paintingsWithInfo = await uow.Paintings.GetAllPaintingsWithInfoAsync();
+
+            string? painterIdClaim = claims.FindFirst("PainterId")?.Value;
+            int? painterId = painterIdClaim != null ? int.Parse(painterIdClaim) : null;
+            if (painterId == null) throw new ValidationException("Користувач не є художником");
+
+            paintingsWithInfo = paintingsWithInfo.Where(p => p.PainterId == painterId &&
+                p.ExhibitionApplications.Any(ea => ea.ExhibitionId == exhibitionId));
+
+            return await ExhibitionApplicationInfoResultAsync(paintingsWithInfo, claims, pagination, exhibitionId);
+        }
+
+        private async Task<Tuple<List<ExhibitionApplicationInfoDTO>, int>> ExhibitionApplicationInfoResultAsync
+            (IQueryable<Painting> paintingsWithInfo, ClaimsPrincipal claims, PaginationRequestDTO pagination, int exhibitionId)
+        {
+            int count = paintingsWithInfo.Count();
+            pagination.PageNumber ??= 1;
+            pagination.PageSize ??= 12;
+            pagination.PageSize = Math.Min(pagination.PageSize.Value, 21);
+            if (pagination.PageNumber < 1 || pagination.PageNumber < 1 ||
+                (pagination.PageNumber > (int)Math.Ceiling((double)count / pagination.PageSize.Value) && count != 0))
+            {
+                throw new ValidationException("Не коректний номер або розмір сторінки.");
+            }
+
+            paintingsWithInfo = paintingsWithInfo.Skip((int)((pagination.PageNumber - 1) * pagination.PageSize)).Take((int)pagination.PageSize);
+
+            string? profileIdClaim = claims.FindFirst("ProfileId")?.Value;
+            int? profileId = profileIdClaim != null ? int.Parse(profileIdClaim) : null;
+
+            var res = (await paintingsWithInfo.ToListAsync())
+                .Select(p =>
+                {
+                    var application = p.ExhibitionApplications.First(ea => ea.PaintingId == p.PaintingId && ea.ExhibitionId == exhibitionId);
+
+                    var paintingInfoDTO = mapper.Map<Painting, PaintingInfoDTO>(p, opt =>
+                        opt.AfterMap((src, dest) =>
+                            dest.IsLiked = profileId == null
+                                ? null
+                                : src.PaintingLikes.Any(pl => pl.ProfileId == profileId)));
+
+                    return new ExhibitionApplicationInfoDTO
+                    {
+                        ApplicationId = application.ApplicationId,
+                        IsConfirmed = application.IsConfirmed,
+                        ExhibitionId = exhibitionId,
+                        PaintingId = p.PaintingId,
+                        Painting = paintingInfoDTO,
+                    };
+                }).ToList();
+            return Tuple.Create(res, count);
         }
 
         public void Dispose()
