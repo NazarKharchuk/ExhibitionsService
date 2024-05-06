@@ -4,6 +4,7 @@ using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Interfaces;
 using ExhibitionsService.PL.Models.HelperModel;
 using ExhibitionsService.PL.Models.Material;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExhibitionsService.PL.Controllers
@@ -54,6 +55,7 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("")]
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PostMaterial([FromBody] MaterialCreateModel entity)
         {
             await materialService.CreateAsync(mapper.Map<MaterialDTO>(entity));
@@ -62,6 +64,7 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("{id}")]
         [HttpPut]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutMaterial(int id, [FromBody] MaterialUpdateModel entity)
         {
             if (id != entity.MaterialId)
@@ -73,6 +76,7 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("{id}")]
         [HttpDelete]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteMaterial(int id)
         {
             await materialService.DeleteAsync(id);

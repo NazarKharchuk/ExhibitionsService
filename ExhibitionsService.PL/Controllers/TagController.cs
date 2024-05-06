@@ -4,6 +4,7 @@ using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Interfaces;
 using ExhibitionsService.PL.Models.HelperModel;
 using ExhibitionsService.PL.Models.Tag;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExhibitionsService.PL.Controllers
@@ -54,6 +55,7 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("")]
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PostTag([FromBody] TagCreateModel entity)
         {
             await tagService.CreateAsync(mapper.Map<TagDTO>(entity));
@@ -62,6 +64,7 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("{id}")]
         [HttpPut]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutTag(int id, [FromBody] TagUpdateModel entity)
         {
             if (id != entity.TagId)
@@ -73,6 +76,7 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("{id}")]
         [HttpDelete]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteTag(int id)
         {
             await tagService.DeleteAsync(id);

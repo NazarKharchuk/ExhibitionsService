@@ -4,6 +4,7 @@ using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Interfaces;
 using ExhibitionsService.PL.Models.HelperModel;
 using ExhibitionsService.PL.Models.Style;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExhibitionsService.PL.Controllers
@@ -54,6 +55,7 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("")]
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PostStyle([FromBody] StyleCreateModel entity)
         {
             await styleService.CreateAsync(mapper.Map<StyleDTO>(entity));
@@ -62,6 +64,7 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("{id}")]
         [HttpPut]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutStyle(int id, [FromBody] StyleUpdateModel entity)
         {
             if (id != entity.StyleId)
@@ -73,6 +76,7 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("{id}")]
         [HttpDelete]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteStyle(int id)
         {
             await styleService.DeleteAsync(id);

@@ -4,6 +4,7 @@ using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Interfaces;
 using ExhibitionsService.PL.Models.Genre;
 using ExhibitionsService.PL.Models.HelperModel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExhibitionsService.PL.Controllers
@@ -54,6 +55,7 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("")]
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PostGenre([FromBody] GenreCreateModel entity)
         {
             await genreService.CreateAsync(mapper.Map<GenreDTO>(entity));
@@ -62,6 +64,7 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("{id}")]
         [HttpPut]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutGenre(int id, [FromBody] GenreUpdateModel entity)
         {
             if (id != entity.GenreId)
@@ -73,6 +76,7 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("{id}")]
         [HttpDelete]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteGenre(int id)
         {
             await genreService.DeleteAsync(id);
