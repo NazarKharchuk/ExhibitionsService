@@ -31,5 +31,10 @@ namespace ExhibitionsService.BLL.Interfaces
 
         Task AddLikeAsync(int paintingId, int profileId);
         Task RemoveLikeAsync(int paintingId, int profileId);
+
+        Task<StatisticsResponseDTO<StatisticsLikesValueDTO>?> GetLikesStatistics
+            (int paintingId, DateTime periodStartDate, string periodSize);
+        Task<StatisticsResponseDTO<StatisticsRatingsValueDTO>?> GetRatingsStatistics
+            (int paintingId, DateTime periodStartDate, string periodSize);
     }
 }

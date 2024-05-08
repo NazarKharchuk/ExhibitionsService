@@ -23,5 +23,15 @@ namespace ExhibitionsService.DAL.Repositories
                     .ThenInclude(pg => pg.ContestApplications)
                         .ThenInclude(ca => ca.Contest);
         }
+
+        public IQueryable<PaintingLike> GetPainterLikes(int painterId)
+        {
+            return db.PaintingLikes.Include(pl => pl.Painting).Where(l => l.Painting.PainterId == painterId);
+        }
+
+        public IQueryable<PaintingRating> GetPainterRatings(int painterId)
+        {
+            return db.PaintingRatings.Include(pl => pl.Painting).Where(r => r.Painting.PainterId == painterId);
+        }
     }
 }

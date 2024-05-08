@@ -19,6 +19,7 @@ namespace ExhibitionsService.DAL.Context
         public DbSet<Style> Styles { get; set; }
         public DbSet<Material> Materials { get; set; }
         public DbSet<Tag> Tags { get; set; }
+        public DbSet<PaintingLike> PaintingLikes { get; set; }
 
         public ExhibitionContext(DbContextOptions<ExhibitionContext> options): base(options)
         {

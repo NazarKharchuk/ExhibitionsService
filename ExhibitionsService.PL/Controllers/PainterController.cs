@@ -2,6 +2,7 @@
 using ExhibitionsService.BLL.DTO;
 using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Interfaces;
+using ExhibitionsService.BLL.Services;
 using ExhibitionsService.PL.Models.HelperModel;
 using ExhibitionsService.PL.Models.Painter;
 using Microsoft.AspNetCore.Mvc;
@@ -69,6 +70,27 @@ namespace ExhibitionsService.PL.Controllers
         {
             await painterService.DeleteAsync(id);
             return new ObjectResult(ResponseModel<PainterModel>.CoverSuccessResponse(null));
+        }
+
+        [Route("{painterId}/likes_statistic")]
+        [HttpGet]
+        public async Task<IActionResult> GetPainterLikess(int painterId, [FromQuery] StatisticRequestModel statisticSettings)
+        {
+            var result = await painterService.GetLikesStatistics(
+                painterId, statisticSettings.PeriodStart, statisticSettings.PeriodSize);
+            return new ObjectResult(ResponseModel<StatisticsResponseModel<StatisticsLikesValueModel>>.CoverSuccessResponse(
+                mapper.Map<StatisticsResponseModel<StatisticsLikesValueModel>>(result)));
+        }
+
+
+        [Route("{painterId}/ratings_statistic")]
+        [HttpGet]
+        public async Task<IActionResult> GetPainterRatings(int painterId, [FromQuery] StatisticRequestModel statisticSettings)
+        {
+            var result = await painterService.GetRatingsStatistics(
+                painterId, statisticSettings.PeriodStart, statisticSettings.PeriodSize);
+            return new ObjectResult(ResponseModel<StatisticsResponseModel<StatisticsRatingsValueModel>>.CoverSuccessResponse(
+                mapper.Map<StatisticsResponseModel<StatisticsRatingsValueModel>>(result)));
         }
     }
 }

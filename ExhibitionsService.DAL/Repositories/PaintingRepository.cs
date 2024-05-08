@@ -52,5 +52,15 @@ namespace ExhibitionsService.DAL.Repositories
                 if(paintingLike != null) painting.PaintingLikes.Remove(paintingLike);
             }
         }
+
+        public IQueryable<PaintingLike> GetPaintingLikes(int paintingId)
+        {
+            return db.PaintingLikes.Where(l => l.PaintingId == paintingId);
+        }
+
+        public IQueryable<PaintingRating> GetPaintingRatings(int paintingId)
+        {
+            return db.PaintingRatings.Where(r => r.PaintingId == paintingId);
+        }
     }
 }

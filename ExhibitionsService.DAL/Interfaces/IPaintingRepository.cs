@@ -9,5 +9,7 @@ namespace ExhibitionsService.DAL.Interfaces
         Task<IQueryable<Painting>> GetAllPaintingsWithInfoAsync();
         void AddLike(Painting painting, PaintingLike like);
         void RemoveLike(int paintingId, int profileId);
+        IQueryable<PaintingLike> GetPaintingLikes(int paintingId);
+        IQueryable<PaintingRating> GetPaintingRatings(int paintingId);
     }
 }

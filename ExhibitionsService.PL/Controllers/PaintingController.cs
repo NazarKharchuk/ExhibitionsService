@@ -152,5 +152,26 @@ namespace ExhibitionsService.PL.Controllers
             await paintingService.RemoveLikeAsync(paintingId, profileId);
             return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
+
+        [Route("{paintingId}/likes_statistic")]
+        [HttpGet]
+        public async Task<IActionResult> GetPaintingLikess(int paintingId, [FromQuery] StatisticRequestModel statisticSettings)
+        {
+            var result = await paintingService.GetLikesStatistics(
+                paintingId, statisticSettings.PeriodStart, statisticSettings.PeriodSize);
+            return new ObjectResult(ResponseModel<StatisticsResponseModel<StatisticsLikesValueModel>>.CoverSuccessResponse(
+                mapper.Map<StatisticsResponseModel<StatisticsLikesValueModel>>(result)));
+        }
+
+
+        [Route("{paintingId}/ratings_statistic")]
+        [HttpGet]
+        public async Task<IActionResult> GetPaintingRatings(int paintingId, [FromQuery] StatisticRequestModel statisticSettings)
+        {
+            var result = await paintingService.GetRatingsStatistics(
+                paintingId, statisticSettings.PeriodStart, statisticSettings.PeriodSize);
+            return new ObjectResult(ResponseModel<StatisticsResponseModel<StatisticsRatingsValueModel>>.CoverSuccessResponse(
+                mapper.Map<StatisticsResponseModel<StatisticsRatingsValueModel>>(result)));
+        }
     }
 }

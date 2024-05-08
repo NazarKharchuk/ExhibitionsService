@@ -12,5 +12,10 @@ namespace ExhibitionsService.BLL.Interfaces
         Task<List<PainterDTO>> GetAllAsync();
         Task<PainterInfoDTO> GetByIdWithInfoAsync(int id);
         Task<Tuple<List<PainterInfoDTO>, int>> GetPagePainterInfoAsync(PaginationRequestDTO pagination);
+
+        Task<StatisticsResponseDTO<StatisticsLikesValueDTO>?> GetLikesStatistics
+            (int painterId, DateTime periodStartDate, string periodSize);
+        Task<StatisticsResponseDTO<StatisticsRatingsValueDTO>?> GetRatingsStatistics
+            (int painterId, DateTime periodStartDate, string periodSize);
     }
 }

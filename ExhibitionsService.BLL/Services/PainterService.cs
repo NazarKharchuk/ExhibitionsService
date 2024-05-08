@@ -3,6 +3,7 @@ using ExhibitionsService.BLL.DTO;
 using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Infrastructure.Exceptions;
 using ExhibitionsService.BLL.Interfaces;
+using ExhibitionsService.BLL.Services.Helpers;
 using ExhibitionsService.DAL.Entities;
 using ExhibitionsService.DAL.Enums;
 using ExhibitionsService.DAL.Interfaces;
@@ -168,6 +169,106 @@ namespace ExhibitionsService.BLL.Services
             if (existingEntity == null) throw new EntityNotFoundException(typeof(PainterDTO).Name, id);
 
             return existingEntity;
+        }
+
+        public async Task<StatisticsResponseDTO<StatisticsLikesValueDTO>?> GetLikesStatistics
+            (int painterId, DateTime periodStartDate, string periodSize)
+        {
+            await CheckEntityPresence(painterId);
+
+            IQueryable<PaintingLike> likes = uow.Painters.GetPainterLikes(painterId);
+            if (!likes.Any()) return null;
+
+            string dataFrequency = StatisticHelper.GetPeriodFrequency(periodSize);
+            DateTime periodEndDate = StatisticHelper.CalculateIncreasedDate(periodStartDate, periodSize);
+            DateTime veryFirstValue = likes.Min(l => l.AddedTime);
+            DateTime veryLastValue = likes.Max(l => l.AddedTime);
+
+            StatisticHelper.ValidateDatesForStatistic(periodStartDate, periodEndDate, veryFirstValue, dataFrequency, periodSize);
+
+            var filteredLikes = likes.Where(l => l.AddedTime >= periodStartDate && l.AddedTime < periodEndDate);
+            IQueryable<IGrouping<DateTime, PaintingLike>> groupedLikes = dataFrequency.ToLower() switch
+            {
+                "hour" => filteredLikes.GroupBy(l => new DateTime(l.AddedTime.Year, l.AddedTime.Month, l.AddedTime.Day, l.AddedTime.Hour, 0, 0)),
+                "day" => filteredLikes.GroupBy(l => new DateTime(l.AddedTime.Year, l.AddedTime.Month, l.AddedTime.Day)),
+                "month" => filteredLikes.GroupBy(l => new DateTime(l.AddedTime.Year, l.AddedTime.Month, 1)),
+                "year" => filteredLikes.GroupBy(l => new DateTime(l.AddedTime.Year, 1, 1)),
+                _ => throw new ValidationException("Неправильне значення частоти статистичних значень"),
+            };
+            var groupedLikesList = await groupedLikes.Select(g => new StatisticsLikesValueDTO
+            {
+                LikesCount = g.Count(),
+                TimePeriodStart = g.Key,
+                TimePeriodEnd = StatisticHelper.CalculateIncreasedDate(g.Key, dataFrequency)
+            }).ToListAsync();
+
+            var statistics = new StatisticsResponseDTO<StatisticsLikesValueDTO>
+            {
+                StatisticsValue = StatisticHelper.FillMissingIntervals<StatisticsLikesValueDTO>
+                    (groupedLikesList, dataFrequency, periodStartDate, periodEndDate, (start, end) => new StatisticsLikesValueDTO
+                    {
+                        LikesCount = 0,
+                        TimePeriodStart = start,
+                        TimePeriodEnd = end
+                    }),
+                VeryFirstValue = veryFirstValue,
+                VeryLastValue = veryLastValue
+            };
+
+            return statistics;
+        }
+
+        public async Task<StatisticsResponseDTO<StatisticsRatingsValueDTO>?> GetRatingsStatistics
+            (int painterId, DateTime periodStartDate, string periodSize)
+        {
+            await CheckEntityPresence(painterId);
+
+            IQueryable<PaintingRating> ratings = uow.Painters.GetPainterRatings(painterId);
+            if (!ratings.Any()) return null;
+
+            string dataFrequency = StatisticHelper.GetPeriodFrequency(periodSize);
+            DateTime periodEndDate = StatisticHelper.CalculateIncreasedDate(periodStartDate, periodSize);
+            DateTime veryFirstValue = ratings.Min(l => l.AddedDate);
+            DateTime veryLastValue = ratings.Max(l => l.AddedDate);
+
+            StatisticHelper.ValidateDatesForStatistic(periodStartDate, periodEndDate, veryFirstValue, dataFrequency, periodSize);
+
+            var filteredRatings = ratings.Where(r => r.AddedDate >= periodStartDate && r.AddedDate < periodEndDate);
+            IQueryable<IGrouping<DateTime, PaintingRating>> groupedRatings = dataFrequency.ToLower() switch
+            {
+                "hour" => filteredRatings.GroupBy(r => new DateTime(r.AddedDate.Year, r.AddedDate.Month, r.AddedDate.Day, r.AddedDate.Hour, 0, 0)),
+                "day" => filteredRatings.GroupBy(r => new DateTime(r.AddedDate.Year, r.AddedDate.Month, r.AddedDate.Day)),
+                "month" => filteredRatings.GroupBy(r => new DateTime(r.AddedDate.Year, r.AddedDate.Month, 1)),
+                "year" => filteredRatings.GroupBy(r => new DateTime(r.AddedDate.Year, 1, 1)),
+                _ => throw new ValidationException("Неправильне значення частоти статистичних значень"),
+            };
+            var groupedRatingsList = await groupedRatings.Select(g => new StatisticsRatingsValueDTO
+            {
+                RatingsCount = new RatingValueDTO(
+                    g.Count(r => r.RatingValue >= 0 && r.RatingValue <= 1),
+                    g.Count(r => r.RatingValue > 1 && r.RatingValue <= 2),
+                    g.Count(r => r.RatingValue > 2 && r.RatingValue <= 3),
+                    g.Count(r => r.RatingValue > 3 && r.RatingValue <= 4),
+                    g.Count(r => r.RatingValue > 4 && r.RatingValue <= 5)
+                ),
+                TimePeriodStart = g.Key,
+                TimePeriodEnd = StatisticHelper.CalculateIncreasedDate(g.Key, dataFrequency)
+            }).ToListAsync();
+
+            var statistics = new StatisticsResponseDTO<StatisticsRatingsValueDTO>
+            {
+                StatisticsValue = StatisticHelper.FillMissingIntervals<StatisticsRatingsValueDTO>
+                    (groupedRatingsList, dataFrequency, periodStartDate, periodEndDate, (start, end) => new StatisticsRatingsValueDTO
+                    {
+                        RatingsCount = new RatingValueDTO(),
+                        TimePeriodStart = start,
+                        TimePeriodEnd = end
+                    }),
+                VeryFirstValue = veryFirstValue,
+                VeryLastValue = veryLastValue
+            };
+
+            return statistics;
         }
     }
 }

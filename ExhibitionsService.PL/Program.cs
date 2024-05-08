@@ -84,7 +84,8 @@ namespace ExhibitionsService.PL
                 typeof(UserProfilesProfiles), typeof(AuthorizationProfiles), typeof(PaintingRatingModelsProfiles),
                 typeof(ExhibitionModelsProfiles), typeof(ExhibitionApplicationModelsProfiles), typeof(ContestModelsProfiles),
                 typeof(ContestApplicationModelsProfiles), typeof(GenreModelsProfiles), typeof(StyleModelsProfiles),
-                typeof(MaterialModelsProfiles), typeof(FilterPaginationModelsProfiles), typeof(ContestApplicationInfoModelProfiles));
+                typeof(MaterialModelsProfiles), typeof(FilterPaginationModelsProfiles), typeof(ContestApplicationInfoModelProfiles),
+                typeof(StatisticsResponseModelSProfiles));
             builder.Services.AddHostedService<ContestWinnerDeterminationService>();
 
             builder.Services.AddAuthentication(options =>
