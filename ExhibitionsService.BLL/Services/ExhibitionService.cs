@@ -85,24 +85,55 @@ namespace ExhibitionsService.BLL.Services
             return mapper.Map<Exhibition, ExhibitionInfoDTO>(exhibition);
         }
 
-        public async Task<Tuple<List<ExhibitionInfoDTO>, int>> GetPageExhibitionInfoAsync(PaginationRequestDTO pagination)
+        public async Task<Tuple<List<ExhibitionInfoDTO>, int>> GetPageExhibitionInfoAsync(ExhibitionFiltrationPaginationRequestDTO filters)
         {
-            var all = await uow.Exhibitions.GetAllAsync();
-            int count = all.Count();
-            pagination.PageNumber ??= 1;
-            pagination.PageSize ??= 12;
-            pagination.PageSize = Math.Min(pagination.PageSize.Value, 21);
-            if (pagination.PageNumber < 1 ||
-                pagination.PageNumber < 1 ||
-                (pagination.PageNumber > (int)Math.Ceiling((double)count / pagination.PageSize.Value) && count != 0))
+            IQueryable<Exhibition> allWithInfo = uow.Exhibitions.GetAllExhibitionsWithInfo();
+
+            if (filters.PaintingId != null)
+            {
+                Painting? existingPainting = await uow.Paintings.GetByIdAsync((int)filters.PaintingId);
+                if (existingPainting == null) throw new EntityNotFoundException(typeof(PaintingDTO).Name, (int)filters.PaintingId);
+                allWithInfo = allWithInfo.Where(e => e.Applications.Any(a => a.PaintingId == filters.PaintingId));
+            }
+            if (filters.TagsIds != null)
+            {
+                foreach (var tagId in filters.TagsIds)
+                {
+                    if ((await uow.Tags.GetByIdAsync(tagId)) == null) throw new EntityNotFoundException(typeof(TagDTO).Name, tagId);
+                    allWithInfo = allWithInfo.Where(e => e.Tags.Any(t => t.TagId == tagId));
+                }
+            }
+            if (filters.NeedConfirmation != null) allWithInfo = allWithInfo.Where(e => e.NeedConfirmation == filters.NeedConfirmation);
+            if (filters.SortBy != null)
+            {
+                Func<Exhibition, object> sortSelector = filters.SortBy switch
+                {
+                    "Name" => e => e.Name,
+                    "AddedDate" => e => e.AddedDate,
+                    _ => throw new ValidationException("Не привильне налаштування сортування")
+                };
+                if (filters.SortOrder != null)
+                {
+                    if (filters.SortOrder == "desc") allWithInfo = allWithInfo.OrderByDescending(sortSelector).AsQueryable();
+                    else allWithInfo = allWithInfo.OrderBy(sortSelector).AsQueryable();
+                }
+            }
+
+            int count = allWithInfo.Count();
+            filters.PageNumber ??= 1;
+            filters.PageSize ??= 12; ;
+            filters.PageSize = Math.Min(filters.PageSize.Value, 21);
+            if (filters.PageNumber < 1 ||
+                filters.PageNumber < 1 ||
+                (filters.PageNumber > (int)Math.Ceiling((double)count / filters.PageSize.Value) && count != 0) ||
+                (count == 0 && filters.PageNumber != 1))
             {
                 throw new ValidationException("Не коректний номер або розмір сторінки.");
             }
 
-            var allWithInfo = uow.Exhibitions.GetAllExhibitionsWithInfo();
-            allWithInfo = allWithInfo.Skip((int)((pagination.PageNumber - 1) * pagination.PageSize)).Take((int)pagination.PageSize);
+            allWithInfo = allWithInfo.Skip((int)((filters.PageNumber - 1) * filters.PageSize)).Take((int)filters.PageSize);
 
-            var res = mapper.Map<List<ExhibitionInfoDTO>>(await allWithInfo.ToListAsync());
+            var res = mapper.Map<List<ExhibitionInfoDTO>>(allWithInfo.ToList());
             return Tuple.Create(res, count);
         }
 

@@ -266,12 +266,59 @@ namespace ExhibitionsService.BLL.Services
                 if (existingPainter == null) throw new EntityNotFoundException(typeof(PainterDTO).Name, (int)filters.PainterId);
                 paintingsWithInfo = paintingsWithInfo.Where(p => p.PainterId == filters.PainterId);
             }
+            if (filters.TagsIds != null)
+            {
+                foreach (var tagId in filters.TagsIds)
+                {
+                    if ((await uow.Tags.GetByIdAsync(tagId)) == null) throw new EntityNotFoundException(typeof(TagDTO).Name, tagId);
+                    paintingsWithInfo = paintingsWithInfo.Where(p => p.Tags.Any(t => t.TagId == tagId));
+                }
+            }
+            if (filters.GenresIds != null)
+            {
+                foreach (var genreId in filters.GenresIds)
+                {
+                    if ((await uow.Genres.GetByIdAsync(genreId)) == null) throw new EntityNotFoundException(typeof(GenreDTO).Name, genreId);
+                    paintingsWithInfo = paintingsWithInfo.Where(p => p.Genres.Any(t => t.GenreId == genreId));
+                }
+            }
+            if (filters.StylesIds != null)
+            {
+                foreach (var styleId in filters.StylesIds)
+                {
+                    if ((await uow.Styles.GetByIdAsync(styleId)) == null) throw new EntityNotFoundException(typeof(StyleDTO).Name, styleId);
+                    paintingsWithInfo = paintingsWithInfo.Where(p => p.Styles.Any(t => t.StyleId == styleId));
+                }
+            }
+            if (filters.MaterialsIds != null)
+            {
+                foreach (var materialId in filters.MaterialsIds)
+                {
+                    if ((await uow.Materials.GetByIdAsync(materialId)) == null) throw new EntityNotFoundException(typeof(MaterialDTO).Name, materialId);
+                    paintingsWithInfo = paintingsWithInfo.Where(p => p.Materials.Any(t => t.MaterialId == materialId));
+                }
+            }
+            if (filters.SortBy != null)
+            {
+                Func<Painting, object> sortSelector = filters.SortBy switch
+                {
+                    "PaintingId" => p => p.PaintingId,
+                    "Name" => p => p.Name,
+                    "CretionDate" => p => p.CretionDate,
+                    _ => throw new ValidationException("Не привильне налаштування сортування")
+                };
+                if (filters.SortOrder != null)
+                {
+                    if (filters.SortOrder == "desc") paintingsWithInfo = paintingsWithInfo.OrderByDescending(sortSelector).AsQueryable();
+                    else paintingsWithInfo = paintingsWithInfo.OrderBy(sortSelector).AsQueryable();
+                }
+            }
 
-            return await PaintingInfoResultAsync(paintingsWithInfo, claims,
+            return PaintingInfoResult(paintingsWithInfo, claims,
                 new PaginationRequestDTO() { PageNumber = filters.PageNumber, PageSize = filters.PageSize });
         }
 
-        private async Task<Tuple<List<PaintingInfoDTO>, int>> PaintingInfoResultAsync(
+        private Tuple<List<PaintingInfoDTO>, int> PaintingInfoResult(
             IQueryable<Painting> paintingsWithInfo,
             ClaimsPrincipal claims,
             PaginationRequestDTO pagination)
@@ -291,7 +338,7 @@ namespace ExhibitionsService.BLL.Services
             string? profileIdClaim = claims.FindFirst("ProfileId")?.Value;
             int? profileId = profileIdClaim != null ? int.Parse(profileIdClaim) : null;
 
-            var res = (await paintingsWithInfo.ToListAsync())
+            var res = (paintingsWithInfo.ToList())
                 .Select(p => mapper.Map<Painting, PaintingInfoDTO>(p, opt =>
                     opt.AfterMap((src, dest) => dest.IsLiked =
                         profileId == null ? null : src.PaintingLikes.Any(pl => pl.ProfileId == profileId)))

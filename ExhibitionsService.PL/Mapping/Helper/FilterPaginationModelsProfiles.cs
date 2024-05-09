@@ -10,6 +10,9 @@ namespace ExhibitionsService.PL.Mapping.Helper
         {
             CreateMap<PaginationRequestModel, PaginationRequestDTO>();
             CreateMap<PaintingsFiltrationPaginationRequestModel, PaintingsFiltrationPaginationRequestDTO>();
+            CreateMap<ContestsFiltrationPaginationRequestModel, ContestsFiltrationPaginationRequestDTO>();
+            CreateMap<ExhibitionFiltrationPaginationRequestModel, ExhibitionFiltrationPaginationRequestDTO>();
+            CreateMap<PaintersFiltrationPaginationRequestModel, PaintersFiltrationPaginationRequestDTO>();
         }
     }
 }

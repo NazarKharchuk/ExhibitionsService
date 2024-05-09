@@ -24,9 +24,9 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("")]
         [HttpGet]
-        public async Task<IActionResult> GetExhibitions([FromQuery] PaginationRequestModel pagination)
+        public async Task<IActionResult> GetExhibitions([FromQuery] ExhibitionFiltrationPaginationRequestModel filters)
         {
-            var paginationResult = await exhibitionService.GetPageExhibitionInfoAsync(mapper.Map<PaginationRequestDTO>(pagination));
+            var paginationResult = await exhibitionService.GetPageExhibitionInfoAsync(mapper.Map<ExhibitionFiltrationPaginationRequestDTO>(filters));
             return new ObjectResult(ResponseModel<PaginationResponseModel<ExhibitionInfoModel>>.CoverSuccessResponse(
                 new PaginationResponseModel<ExhibitionInfoModel>()
                 {

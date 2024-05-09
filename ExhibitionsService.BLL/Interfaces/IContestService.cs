@@ -12,7 +12,7 @@ namespace ExhibitionsService.BLL.Interfaces
         Task<ContestDTO?> GetByIdAsync(int id);
         Task<List<ContestDTO>> GetAllAsync();
         Task<ContestInfoDTO> GetByIdWithInfoAsync(int id);
-        Task<Tuple<List<ContestInfoDTO>, int>> GetPageContestInfoAsync(PaginationRequestDTO pagination);
+        Task<Tuple<List<ContestInfoDTO>, int>> GetPageContestInfoAsync(ContestsFiltrationPaginationRequestDTO filters);
         Task AddTagAsync(int contestId, int tagId);
         Task RemoveTagAsync(int contestId, int tagId);
 

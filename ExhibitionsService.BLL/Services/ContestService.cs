@@ -121,24 +121,64 @@ namespace ExhibitionsService.BLL.Services
             return mapper.Map<List<ContestDTO>>((await uow.Contests.GetAllAsync()).ToList());
         }
 
-        public async Task<Tuple<List<ContestInfoDTO>, int>> GetPageContestInfoAsync(PaginationRequestDTO pagination)
+        public async Task<Tuple<List<ContestInfoDTO>, int>> GetPageContestInfoAsync(ContestsFiltrationPaginationRequestDTO filters)
         {
-            var all = await uow.Contests.GetAllAsync();
-            int count = all.Count();
-            pagination.PageNumber ??= 1;
-            pagination.PageSize ??= 12;;
-            pagination.PageSize = Math.Min(pagination.PageSize.Value, 21);
-            if (pagination.PageNumber < 1 ||
-                pagination.PageNumber < 1 ||
-                (pagination.PageNumber > (int)Math.Ceiling((double)count / pagination.PageSize.Value) && count != 0))
+            IQueryable<Contest> allWithInfo = uow.Contests.GetAllContestsWithInfo();
+
+            if (filters.PaintingId != null)
+            {
+                Painting? existingPainting = await uow.Paintings.GetByIdAsync((int)filters.PaintingId);
+                if (existingPainting == null) throw new EntityNotFoundException(typeof(PaintingDTO).Name, (int)filters.PaintingId);
+                allWithInfo = allWithInfo.Where(c => c.Applications.Any(a => a.PaintingId == filters.PaintingId));
+            }
+            if (filters.TagsIds != null)
+            {
+                foreach(var tagId in filters.TagsIds)
+                {
+                    if ((await uow.Tags.GetByIdAsync(tagId)) == null) throw new EntityNotFoundException(typeof(TagDTO).Name, tagId);
+                    allWithInfo = allWithInfo.Where(c => c.Tags.Any(t => t.TagId == tagId));
+                }
+            }
+            if (filters.NeedConfirmation != null) allWithInfo = allWithInfo.Where(c => c.NeedConfirmation == filters.NeedConfirmation);
+            if (filters.Status != null)
+            {
+                DateTime now = DateTime.Now;
+                if (filters.Status == "ApplicationOpen") allWithInfo = allWithInfo.Where(c => c.StartDate > now); 
+                else if (filters.Status == "Voting") allWithInfo = allWithInfo.Where(c => c.StartDate <= now && c.EndDate > now);
+                else if (filters.Status == "Closed") allWithInfo = allWithInfo.Where(c => c.EndDate <= now);
+            }
+            if (filters.SortBy != null)
+            {
+                Func<Contest, object> sortSelector = filters.SortBy switch
+                {
+                    "Name" => c => c.Name,
+                    "AddedDate" => c => c.AddedDate,
+                    "StartDate" => c => c.StartDate,
+                    "EndDate" => c => c.EndDate,
+                    _ => throw new ValidationException("Не привильне налаштування сортування")
+                };
+                if(filters.SortOrder != null)
+                {
+                    if(filters.SortOrder == "desc") allWithInfo = allWithInfo.OrderByDescending(sortSelector).AsQueryable();
+                    else allWithInfo = allWithInfo.OrderBy(sortSelector).AsQueryable();
+                }
+            }
+
+            int count = allWithInfo.Count();
+            filters.PageNumber ??= 1;
+            filters.PageSize ??= 12; ;
+            filters.PageSize = Math.Min(filters.PageSize.Value, 21);
+            if (filters.PageNumber < 1 ||
+                filters.PageNumber < 1 ||
+                (filters.PageNumber > (int)Math.Ceiling((double)count / filters.PageSize.Value) && count != 0) ||
+                (count == 0 && filters.PageNumber != 1))
             {
                 throw new ValidationException("Не коректний номер або розмір сторінки.");
             }
 
-            var allWithInfo = uow.Contests.GetAllContestsWithInfo();
-            allWithInfo = allWithInfo.Skip((int)((pagination.PageNumber - 1) * pagination.PageSize)).Take((int)pagination.PageSize);
+            allWithInfo = allWithInfo.Skip((int)((filters.PageNumber - 1) * filters.PageSize)).Take((int)filters.PageSize);
 
-            var res = mapper.Map<List<ContestInfoDTO>>(await allWithInfo.ToListAsync());
+            var res = mapper.Map<List<ContestInfoDTO>>(allWithInfo.ToList());
             return Tuple.Create(res, count);
         }
 

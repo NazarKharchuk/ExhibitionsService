@@ -84,22 +84,7 @@ namespace ExhibitionsService.BLL.Services
             var allWithInfo = uow.Painters.GetAllPaintersWithInfo();
             var painter = allWithInfo.Where(p => p.PainterId == id).FirstOrDefault();
 
-            return new PainterInfoDTO()
-            {
-                PainterId = painter.PainterId,
-                Pseudonym = painter.Pseudonym,
-                Description = painter.Description,
-                ProfileId = painter.ProfileId,
-                FirstName = painter.UserProfile.FirstName,
-                LastName = painter.UserProfile.LastName,
-                JoiningDate = painter.UserProfile.JoiningDate,
-                LikesCount = painter.Paintings.Any() ? painter.Paintings.Sum(pg => pg.PaintingLikes.Count) : 0,
-                VictoriesCount = painter.Paintings.Any() ? painter.Paintings.SelectMany(pg => pg.ContestApplications).Count(ca => ca.IsWon) : 0,
-                RatingCount = painter.Paintings.Any() ? painter.Paintings.Sum(pg => pg.Ratings.Count) : 0,
-                AvgRating = painter.Paintings.Any() && painter.Paintings.SelectMany(painting => painting.Ratings).Any()
-                        ? painter.Paintings.SelectMany(painting => painting.Ratings).Average(r => r.RatingValue)
-                        : 0
-            };
+            return mapper.Map<PainterInfoDTO>(painter);
         }
 
         public async Task<List<PainterDTO>> GetAllAsync()
@@ -107,39 +92,40 @@ namespace ExhibitionsService.BLL.Services
             return mapper.Map<List<PainterDTO>>((await uow.Painters.GetAllAsync()).ToList());
         }
 
-        public async Task<Tuple<List<PainterInfoDTO>, int>> GetPagePainterInfoAsync(PaginationRequestDTO pagination)
+        public async Task<Tuple<List<PainterInfoDTO>, int>> GetPagePainterInfoAsync(PaintersFiltrationPaginationRequestDTO filters)
         {
-            var all = await uow.Painters.GetAllAsync();
-            int count = all.Count();
-            if (pagination.PageNumber == null) pagination.PageNumber = 1;
-            if (pagination.PageSize == null) { pagination.PageSize = 12; };
-            pagination.PageSize = Math.Min(pagination.PageSize.Value, 21);
-            if (pagination.PageNumber < 1 ||
-                pagination.PageNumber < 1 ||
-                (pagination.PageNumber > (int)Math.Ceiling((double)count / pagination.PageSize.Value) && count != 0))
+            IQueryable<Painter> allWithInfo = uow.Painters.GetAllPaintersWithInfo();
+
+            if (filters.SortBy != null)
+            {
+                Func<Painter, object> sortSelector = filters.SortBy switch
+                {
+                    "PainterId" => p => p.PainterId,
+                    "Pseudonym" => p => p.Pseudonym,
+                    _ => throw new ValidationException("Не привильне налаштування сортування")
+                };
+                if (filters.SortOrder != null)
+                {
+                    if (filters.SortOrder == "desc") allWithInfo = allWithInfo.OrderByDescending(sortSelector).AsQueryable();
+                    else allWithInfo = allWithInfo.OrderBy(sortSelector).AsQueryable();
+                }
+            }
+
+            int count = allWithInfo.Count();
+            filters.PageNumber ??= 1;
+            filters.PageSize ??= 12; ;
+            filters.PageSize = Math.Min(filters.PageSize.Value, 21);
+            if (filters.PageNumber < 1 ||
+                filters.PageNumber < 1 ||
+                (filters.PageNumber > (int)Math.Ceiling((double)count / filters.PageSize.Value) && count != 0) ||
+                (count == 0 && filters.PageNumber != 1))
             {
                 throw new ValidationException("Не коректний номер або розмір сторінки.");
             }
 
-            var allWithInfo = uow.Painters.GetAllPaintersWithInfo();
-            allWithInfo = allWithInfo.Skip((int)((pagination.PageNumber - 1) * pagination.PageSize)).Take((int)pagination.PageSize);
+            allWithInfo = allWithInfo.Skip((int)((filters.PageNumber - 1) * filters.PageSize)).Take((int)filters.PageSize);
 
-            var res = (await allWithInfo.ToListAsync()).Select(p => new PainterInfoDTO
-                {
-                    PainterId = p.PainterId,
-                    Pseudonym = p.Pseudonym,
-                    Description = p.Description,
-                    ProfileId = p.ProfileId,
-                    FirstName = p.UserProfile.FirstName,
-                    LastName = p.UserProfile.LastName,
-                    JoiningDate = p.UserProfile.JoiningDate,
-                    LikesCount = p.Paintings.Any() ? p.Paintings.Sum(pg => pg.PaintingLikes.Count) : 0,
-                    VictoriesCount = p.Paintings.Any() ? p.Paintings.SelectMany(pg => pg.ContestApplications).Count(ca => ca.IsWon) : 0,
-                    RatingCount = p.Paintings.Any() ? p.Paintings.Sum(pg => pg.Ratings.Count) : 0,
-                    AvgRating = p.Paintings.Any() && p.Paintings.SelectMany(painting => painting.Ratings).Any()
-                        ? p.Paintings.SelectMany(painting => painting.Ratings).Average(r => r.RatingValue)
-                        : 0
-            }).ToList();
+            var res = mapper.Map<List<PainterInfoDTO>>(allWithInfo.ToList());
             return Tuple.Create(res, count);
         }
 
