@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.IdentityModel.Tokens;
-using System;
 using System.Security.Claims;
 
 namespace ExhibitionsService.BLL.Services
@@ -49,8 +48,12 @@ namespace ExhibitionsService.BLL.Services
             var existingEntity = await CheckEntityPresence(entity.PaintingId);
 
             ValidateEntity(entity);
-            
-            if(image != null)
+
+            if (existingEntity.IsSold is not null and true &&
+                (existingEntity.IsSold != entity.IsSold || existingEntity.Price != entity.Price))
+                throw new ValidationException("Не можна змінити ціну чи статус проданої картини");
+
+            if (image != null)
             {
                 ValidateImage(image);
 
@@ -66,6 +69,9 @@ namespace ExhibitionsService.BLL.Services
             existingEntity.Width = entity.Width;
             existingEntity.Height = entity.Height;
             existingEntity.Location = entity.Location;
+            existingEntity.Location = entity.Location;
+            existingEntity.IsSold = entity.IsSold;
+            existingEntity.Price = entity.Price;
 
             await uow.Paintings.UpdateAsync(existingEntity);
             await uow.SaveAsync();
@@ -413,6 +419,12 @@ namespace ExhibitionsService.BLL.Services
 
             if (!entity.Location.IsNullOrEmpty() && entity.Location.Length > 100)
                 throw new ValidationException(entity.GetType().Name, nameof(entity.Location));
+
+            if (entity.Price != null && entity.Price <= 0)
+                throw new ValidationException(entity.GetType().Name, nameof(entity.Price));
+
+            if (entity.IsSold != null && entity.IsSold == false && entity.Price == null)
+                throw new ValidationException("Якщо картина продається, то потрібно вказати її вартість");
         }
 
         private void ValidateImage(IFormFile image)

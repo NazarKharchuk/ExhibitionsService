@@ -102,6 +102,8 @@ namespace ExhibitionsService.DAL.Context
                 builder.Property(p => p.Height).IsRequired();
                 builder.Property(p => p.ImagePath).IsRequired().HasMaxLength(100);
                 builder.Property(p => p.Location).HasMaxLength(100);
+                builder.Property(p => p.IsSold);
+                builder.Property(p => p.Price);
 
                 builder.HasOne(p => p.Painter)
                     .WithMany(pr => pr.Paintings)

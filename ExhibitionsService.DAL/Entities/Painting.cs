@@ -10,6 +10,8 @@
         public decimal Height { get; set; }
         public string ImagePath { get; set; }
         public string? Location { get; set; }
+        public bool? IsSold { get; set; }
+        public decimal? Price { get; set; }
 
         public int PainterId { get; set; }
         public Painter Painter { get; set; }

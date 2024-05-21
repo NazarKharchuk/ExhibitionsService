@@ -1,5 +1,6 @@
 ﻿using ExhibitionsService.BLL.Infrastructure.Exceptions;
 using ExhibitionsService.PL.Models.HelperModel;
+using Stripe;
 using System.Net;
 using System.Text.Json;
 
@@ -47,6 +48,11 @@ namespace ExhibitionsService.PL.Middlewares
                         break;
                     }
                 case ArgumentException:
+                    {
+                        statusCode = (int)HttpStatusCode.BadRequest;
+                        break;
+                    }
+                case StripeException:
                     {
                         statusCode = (int)HttpStatusCode.BadRequest;
                         break;

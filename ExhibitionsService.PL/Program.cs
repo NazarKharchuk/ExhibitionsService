@@ -26,6 +26,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Stripe;
 using System.Text;
 
 namespace ExhibitionsService.PL
@@ -73,11 +74,14 @@ namespace ExhibitionsService.PL
             builder.Services.AddScoped<IGenreService, GenreService>();
             builder.Services.AddScoped<IStyleService, StyleService>();
             builder.Services.AddScoped<IMaterialService, MaterialService>();
+            builder.Services.AddScoped<IPaintingBuyingService, PaintingBuyingService>();
 
             builder.Services.AddAutoMapper(typeof(PainterProfile), typeof(TagProfile), typeof(PaintingProfile),
                 typeof(PaintingRatingProfile), typeof(ExhibitionProfile), typeof(ExhibitionApplicationProfile),
                 typeof(ContestProfile), typeof(ContestApplicationProfile), typeof(PaintingLikeProfile),
                 typeof(GenreProfile), typeof(StyleProfile), typeof(MaterialProfile));
+
+            StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
             // PL
             builder.Services.AddAutoMapper(typeof(PainterModelsProfiles), typeof(TagModelsProfiles), typeof(PaintingModelsProfiles),

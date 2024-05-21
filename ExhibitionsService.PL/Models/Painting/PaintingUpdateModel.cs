@@ -29,6 +29,11 @@ namespace ExhibitionsService.PL.Models.Painting
         [MaxLength(100, ErrorMessage = "Довжина поля 'Location' художника не повинна перевищувати 100 символів.")]
         public string? Location { get; set; }
 
+        public bool? IsSold { get; set; }
+
+        [Range(0, (double)decimal.MaxValue, ErrorMessage = "Поле 'Price' картини повинне бути більшим за 0.")]
+        public decimal? Price { get; set; }
+
         public IFormFile? Image { get; set; }
     }
 }
