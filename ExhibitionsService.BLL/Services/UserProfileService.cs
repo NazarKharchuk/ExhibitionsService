@@ -79,7 +79,28 @@ namespace ExhibitionsService.BLL.Services
         {
             var existingEntities = await CheckEntityPresence(id);
 
-            await userManager.DeleteAsync(existingEntities.Item1);
+            using (var transaction = await uow.BeginTransactionAsync())
+            {
+                try
+                {
+                    await uow.UserProfiles.DeleteRelatedInfo(id);
+
+                    var result = await userManager.DeleteAsync(existingEntities.Item1);
+                    if (!result.Succeeded)
+                    {
+                        throw new Exception("Не вдалося видалити профіль");
+                    }
+
+                    await uow.SaveAsync();
+
+                    transaction.Commit();
+                }
+                catch (Exception e)
+                {
+                    transaction.Rollback();
+                    throw new Exception($"Помилка на етапі створення видалення профіля({e.Message})");
+                }
+            }
         }
 
         public async Task AddRole(int id, Role _role)

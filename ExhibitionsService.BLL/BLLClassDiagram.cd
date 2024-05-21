@@ -1,0 +1,482 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="ExhibitionsService.BLL.Services.AuthService" BaseTypeListCollapsed="true">
+    <Position X="1.5" Y="1.25" Width="1.5" />
+    <AssociationLine Name="uow" Type="ExhibitionsService.DAL.Interfaces.IUnitOfWork" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="2.25" Y="1.25" />
+        <Point X="2.25" Y="0.875" />
+        <Point X="15.562" Y="0.875" />
+        <Point X="15.562" Y="1.25" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="12.78" Y="0.4" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AoACAQAAAAAQBAAgAAEIAAQAAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Services\AuthService.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="uow" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ExhibitionsService.BLL.Services.ContestApplicationService" BaseTypeListCollapsed="true">
+    <Position X="5.5" Y="6.5" Width="1.5" />
+    <AssociationLine Name="uow" Type="ExhibitionsService.DAL.Interfaces.IUnitOfWork" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="6.625" Y="6.5" />
+        <Point X="6.625" Y="6.214" />
+        <Point X="7.025" Y="6.214" Type="JumpStart" />
+        <Point X="7.192" Y="6.214" Type="JumpEnd" />
+        <Point X="7.25" Y="6.214" />
+        <Point X="7.25" Y="0.875" />
+        <Point X="17.375" Y="0.875" />
+        <Point X="17.375" Y="2.062" />
+        <Point X="17" Y="2.062" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="mapper" Type="AutoMapper.IMapper" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="6.25" Y="10.103" />
+        <Point X="6.25" Y="10.451" />
+        <Point X="15.938" Y="10.451" />
+        <Point X="15.938" Y="7.627" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="8.958" Y="2.57" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AQEAAAAACCAYAIAAAAAAAASgAAAAABAAAAAAAIAAIIE=</HashCode>
+      <FileName>Services\ContestApplicationService.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="uow" />
+      <Field Name="mapper" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ExhibitionsService.BLL.Services.ContestService" BaseTypeListCollapsed="true">
+    <Position X="5.5" Y="1.25" Width="1.5" />
+    <AssociationLine Name="uow" Type="ExhibitionsService.DAL.Interfaces.IUnitOfWork" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="6.25" Y="1.25" />
+        <Point X="6.25" Y="0.875" />
+        <Point X="15.812" Y="0.875" />
+        <Point X="15.812" Y="1.25" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="9.06" Y="0.39" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <AssociationLine Name="mapper" Type="AutoMapper.IMapper" ManuallyRouted="true">
+      <Path>
+        <Point X="6.25" Y="5.623" />
+        <Point X="6.25" Y="5.886" />
+        <Point X="7.109" Y="5.886" />
+        <Point X="7.109" Y="10.429" />
+        <Point X="15.812" Y="10.429" />
+        <Point X="15.812" Y="7.627" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="9.519" Y="-1.987" Height="0.182" Width="0.741" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AIECAAAACCBYAAAABAAAgAQAAAAAgBgAAABAAIAAYIA=</HashCode>
+      <FileName>Services\ContestService.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="uow" />
+      <Field Name="mapper" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ExhibitionsService.BLL.Services.ExhibitionApplicationService" BaseTypeListCollapsed="true">
+    <Position X="3.5" Y="6.25" Width="1.5" />
+    <AssociationLine Name="uow" Type="ExhibitionsService.DAL.Interfaces.IUnitOfWork" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="4.25" Y="6.25" />
+        <Point X="4.25" Y="5.805" />
+        <Point X="5.25" Y="5.805" />
+        <Point X="5.25" Y="0.875" />
+        <Point X="17.375" Y="0.875" />
+        <Point X="17.375" Y="1.688" />
+        <Point X="17" Y="1.688" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="mapper" Type="AutoMapper.IMapper" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="4.25" Y="9.084" />
+        <Point X="4.25" Y="10.417" />
+        <Point X="16.062" Y="10.417" />
+        <Point X="16.062" Y="7.627" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="11.082" Y="2.569" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAEAAAAACCAYAAAAAAAAAAQAAAAAABAAAAAAAIAAIIE=</HashCode>
+      <FileName>Services\ExhibitionApplicationService.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="uow" />
+      <Field Name="mapper" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ExhibitionsService.BLL.Services.ExhibitionService" BaseTypeListCollapsed="true">
+    <Position X="3.5" Y="1.25" Width="1.5" />
+    <AssociationLine Name="uow" Type="ExhibitionsService.DAL.Interfaces.IUnitOfWork" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="4.25" Y="1.25" />
+        <Point X="4.25" Y="0.875" />
+        <Point X="15.688" Y="0.875" />
+        <Point X="15.688" Y="1.25" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="10.94" Y="0.39" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <AssociationLine Name="mapper" Type="AutoMapper.IMapper" ManuallyRouted="true">
+      <Path>
+        <Point X="4.625" Y="5.43" />
+        <Point X="4.625" Y="5.628" />
+        <Point X="5.176" Y="5.628" />
+        <Point X="5.176" Y="10.43" />
+        <Point X="15.688" Y="10.43" />
+        <Point X="15.688" Y="7.627" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="11.038" Y="-2.181" Height="0.182" Width="0.72" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAECAAAACCJYAAAACABAgEQAAQAAAAgAAAAAAIAAIIA=</HashCode>
+      <FileName>Services\ExhibitionService.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="uow" />
+      <Field Name="mapper" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ExhibitionsService.BLL.Services.GenreService" BaseTypeListCollapsed="true">
+    <Position X="11.5" Y="1.25" Width="1.5" />
+    <AssociationLine Name="uow" Type="ExhibitionsService.DAL.Interfaces.IUnitOfWork" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="12.188" Y="1.25" />
+        <Point X="12.188" Y="0.875" />
+        <Point X="16.188" Y="0.875" />
+        <Point X="16.188" Y="1.25" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="3.511" Y="0.384" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <AssociationLine Name="mapper" Type="AutoMapper.IMapper" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="12.25" Y="4.084" />
+        <Point X="12.25" Y="4.271" />
+        <Point X="13.25" Y="4.271" />
+        <Point X="13.25" Y="10.401" />
+        <Point X="16.562" Y="10.401" />
+        <Point X="16.562" Y="7.627" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="4.219" Y="-3.511" Height="0.182" Width="0.863" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAEAAAAACCIIAAAAAAAAAAQAAAAAABgAAAAAAIAAIIA=</HashCode>
+      <FileName>Services\GenreService.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="uow" />
+      <Field Name="mapper" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ExhibitionsService.BLL.Services.MaterialService" BaseTypeListCollapsed="true">
+    <Position X="13.5" Y="1.25" Width="1.5" />
+    <AssociationLine Name="uow" Type="ExhibitionsService.DAL.Interfaces.IUnitOfWork" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="14.25" Y="1.25" />
+        <Point X="14.25" Y="0.875" />
+        <Point X="16.312" Y="0.875" />
+        <Point X="16.312" Y="1.25" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="1.557" Y="0.407" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <AssociationLine Name="mapper" Type="AutoMapper.IMapper" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="14.25" Y="4.084" />
+        <Point X="14.25" Y="4.459" />
+        <Point X="15.085" Y="4.459" />
+        <Point X="15.085" Y="10.449" />
+        <Point X="16.812" Y="10.449" />
+        <Point X="16.812" Y="7.627" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="2.595" Y="-3.511" Height="0.182" Width="0.794" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAEAAAAACCIIAAAAAAAAAAQAAAAAABgAAAAAAIAAIIA=</HashCode>
+      <FileName>Services\MaterialService.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="uow" />
+      <Field Name="mapper" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ExhibitionsService.BLL.Services.PainterService" BaseTypeListCollapsed="true">
+    <Position X="9.5" Y="1.25" Width="1.5" />
+    <AssociationLine Name="uow" Type="ExhibitionsService.DAL.Interfaces.IUnitOfWork" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="10.25" Y="1.25" />
+        <Point X="10.25" Y="0.875" />
+        <Point X="16.062" Y="0.875" />
+        <Point X="16.062" Y="1.25" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="5.34" Y="0.39" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <AssociationLine Name="mapper" Type="AutoMapper.IMapper" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="10.25" Y="5.113" />
+        <Point X="10.25" Y="5.309" />
+        <Point X="11.194" Y="5.309" />
+        <Point X="11.194" Y="10.436" />
+        <Point X="16.312" Y="10.436" />
+        <Point X="16.312" Y="7.627" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="6.092" Y="-2.51" Height="0.182" Width="0.716" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAEAIAAACCAYBAAAQAAAgAQAAAAAAAgAAAAAAIAAIIA=</HashCode>
+      <FileName>Services\PainterService.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="uow" />
+      <Field Name="mapper" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ExhibitionsService.BLL.Services.PaintingBuyingService" BaseTypeListCollapsed="true">
+    <Position X="7.5" Y="7.75" Width="1.5" />
+    <AssociationLine Name="uow" Type="ExhibitionsService.DAL.Interfaces.IUnitOfWork" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="8.375" Y="7.75" />
+        <Point X="8.375" Y="7.413" />
+        <Point X="9.124" Y="7.413" Type="JumpStart" />
+        <Point X="9.29" Y="7.413" Type="JumpEnd" />
+        <Point X="9.375" Y="7.413" />
+        <Point X="9.375" Y="0.875" />
+        <Point X="17.375" Y="0.875" />
+        <Point X="17.375" Y="2.438" />
+        <Point X="17" Y="2.438" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAIAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAQAI=</HashCode>
+      <FileName>Services\PaintingBuyingService.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="uow" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ExhibitionsService.BLL.Services.PaintingRatingService" BaseTypeListCollapsed="true">
+    <Position X="9.5" Y="5.75" Width="1.5" />
+    <AssociationLine Name="mapper" Type="AutoMapper.IMapper" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="10.25" Y="8.969" />
+        <Point X="10.25" Y="10.427" />
+        <Point X="16.438" Y="10.427" />
+        <Point X="16.438" Y="7.627" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="5.429" Y="2.564" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <AssociationLine Name="uow" Type="ExhibitionsService.DAL.Interfaces.IUnitOfWork" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="10.312" Y="5.75" />
+        <Point X="10.312" Y="5.49" />
+        <Point X="11.111" Y="5.49" Type="JumpStart" />
+        <Point X="11.278" Y="5.49" Type="JumpEnd" />
+        <Point X="11.374" Y="5.49" />
+        <Point X="11.374" Y="0.875" />
+        <Point X="17.375" Y="0.875" />
+        <Point X="17.375" Y="2.812" />
+        <Point X="17" Y="2.812" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAEEAAAACCAYAAAAAAAAgAQAAABAAAgAAAAAAIAAIIA=</HashCode>
+      <FileName>Services\PaintingRatingService.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="mapper" />
+      <Field Name="uow" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ExhibitionsService.BLL.Services.PaintingService" BaseTypeListCollapsed="true">
+    <Position X="7.5" Y="1.25" Width="1.5" />
+    <AssociationLine Name="uow" Type="ExhibitionsService.DAL.Interfaces.IUnitOfWork" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="8.25" Y="1.25" />
+        <Point X="8.25" Y="0.875" />
+        <Point X="15.938" Y="0.875" />
+        <Point X="15.938" Y="1.25" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="7.17" Y="0.38" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <AssociationLine Name="mapper" Type="AutoMapper.IMapper" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="8.312" Y="6.969" />
+        <Point X="8.312" Y="7.217" />
+        <Point X="9.207" Y="7.217" />
+        <Point X="9.207" Y="10.401" />
+        <Point X="16.188" Y="10.401" />
+        <Point X="16.188" Y="7.627" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="7.822" Y="-0.631" Height="0.182" Width="0.802" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>ABECAAACCCBYpAAAQQAAgEQAAAMAAQgAAAAAAIAAIIA=</HashCode>
+      <FileName>Services\PaintingService.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="uow" />
+      <Field Name="mapper" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ExhibitionsService.BLL.Services.StyleService" BaseTypeListCollapsed="true">
+    <Position X="11.5" Y="4.75" Width="1.5" />
+    <AssociationLine Name="uow" Type="ExhibitionsService.DAL.Interfaces.IUnitOfWork" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="12.25" Y="4.75" />
+        <Point X="12.25" Y="4.43" />
+        <Point X="13.167" Y="4.43" Type="JumpStart" />
+        <Point X="13.333" Y="4.43" Type="JumpEnd" />
+        <Point X="13.375" Y="4.43" />
+        <Point X="13.375" Y="0.875" />
+        <Point X="17.375" Y="0.875" />
+        <Point X="17.375" Y="3.188" />
+        <Point X="17" Y="3.188" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="mapper" Type="AutoMapper.IMapper" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="13" Y="6.167" />
+        <Point X="13.25" Y="6.167" />
+        <Point X="13.25" Y="10.444" />
+        <Point X="16.688" Y="10.444" />
+        <Point X="16.688" Y="7.627" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="2.707" Y="2.571" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAEAAAAACCIIAAAAAAAAAAQAAAAAABgAAAAAAIAAIIA=</HashCode>
+      <FileName>Services\StyleService.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="uow" />
+      <Field Name="mapper" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ExhibitionsService.BLL.Services.TagService" BaseTypeListCollapsed="true">
+    <Position X="13.5" Y="5" Width="1.5" />
+    <AssociationLine Name="uow" Type="ExhibitionsService.DAL.Interfaces.IUnitOfWork" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="14.25" Y="5" />
+        <Point X="14.25" Y="4.625" />
+        <Point X="15.002" Y="4.625" Type="JumpStart" />
+        <Point X="15.169" Y="4.625" Type="JumpEnd" />
+        <Point X="15.25" Y="4.625" />
+        <Point X="15.25" Y="0.896" />
+        <Point X="17.375" Y="0.896" />
+        <Point X="17.375" Y="3.5" />
+        <Point X="17" Y="3.5" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="mapper" Type="AutoMapper.IMapper" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="14.25" Y="7.834" />
+        <Point X="14.25" Y="10.43" />
+        <Point X="16.938" Y="10.43" />
+        <Point X="16.938" Y="7.627" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="1.933" Y="2.572" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAEAAAAACCIIAAAAAAAAAAQAAAAAABgAAAAAAIAAIIA=</HashCode>
+      <FileName>Services\TagService.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="uow" />
+      <Field Name="mapper" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ExhibitionsService.BLL.Services.UserProfileService" BaseTypeListCollapsed="true">
+    <Position X="1.5" Y="5" Width="1.5" />
+    <AssociationLine Name="uow" Type="ExhibitionsService.DAL.Interfaces.IUnitOfWork" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="2.25" Y="5" />
+        <Point X="2.25" Y="4.688" />
+        <Point X="3.378" Y="4.688" />
+        <Point X="3.378" Y="0.875" />
+        <Point X="17.375" Y="0.875" />
+        <Point X="17.375" Y="1.375" />
+        <Point X="17" Y="1.375" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>QIAAAAAACCAQIAAAgAAAIAQAAAAAAAgAAAAgAIAAIIA=</HashCode>
+      <FileName>Services\UserProfileService.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="uow" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ExhibitionsService.BLL.Services.Helpers.StatisticHelper">
+    <Position X="11.5" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAQIAAAAAIAAAAAAAAIAAQAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Services\Helpers\StatisticHelper.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="ExhibitionsService.DAL.Interfaces.IUnitOfWork">
+    <Position X="15.5" Y="1.25" Width="1.5" />
+    <TypeIdentifier />
+  </Interface>
+  <Interface Name="AutoMapper.IMapper">
+    <Position X="15.5" Y="5.75" Width="1.5" />
+    <TypeIdentifier />
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

@@ -1,0 +1,205 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="ExhibitionsService.DAL.Entities.Contest">
+    <Position X="11.25" Y="0.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAIAAAAABAgAAAAAEAAAQQgAAAAAEIAEAgEAEAAAAA=</HashCode>
+      <FileName>Entities\Contest.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ExhibitionsService.DAL.Entities.ContestApplication">
+    <Position X="11.25" Y="4.25" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>EAAAACAAAgAAAAAAAQAEAQAAAAAAAAAAEAAgAAAAAAA=</HashCode>
+      <FileName>Entities\ContestApplication.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Contest" />
+      <Property Name="Painting" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="ExhibitionsService.DAL.Entities.Exhibition">
+    <Position X="9" Y="0.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAIAAAAABAgAAAAAEAAAQQAAAAAAEQAAAgAAAAAAAA=</HashCode>
+      <FileName>Entities\Exhibition.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ExhibitionsService.DAL.Entities.ExhibitionApplication">
+    <Position X="9" Y="3.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAAAAAACAAAAAQAAAQAAAAAAAAQAAAAgAAAAAAA=</HashCode>
+      <FileName>Entities\ExhibitionApplication.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Exhibition" />
+      <Property Name="Painting" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="ExhibitionsService.DAL.Entities.Genre">
+    <Position X="3.75" Y="6.75" Width="1.5" />
+    <AssociationLine Name="Paintings" Type="ExhibitionsService.DAL.Entities.Painting" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="4.5" Y="6.75" />
+        <Point X="4.5" Y="6.565" />
+        <Point X="5.25" Y="6.565" />
+        <Point X="5.25" Y="5.25" />
+        <Point X="6" Y="5.25" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="0.776" Y="-1.299" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAIAAAAAAAAQAAAAAAAAAAAAAAAAAAAAI=</HashCode>
+      <FileName>Entities\Genre.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Paintings" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="ExhibitionsService.DAL.Entities.Material">
+    <Position X="7.75" Y="6.75" Width="1.5" />
+    <AssociationLine Name="Paintings" Type="ExhibitionsService.DAL.Entities.Painting" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="8.562" Y="6.75" />
+        <Point X="8.562" Y="6.375" />
+        <Point X="7" Y="6.375" />
+        <Point X="7" Y="5.642" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="-1.282" Y="0.782" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAQAAQAAAAAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Entities\Material.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Paintings" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="ExhibitionsService.DAL.Entities.Painter">
+    <Position X="3.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAAAAAgAAAAAAAAAQAAAAQAAAAAAAAACAAAgAA=</HashCode>
+      <FileName>Entities\Painter.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="UserProfile" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="ExhibitionsService.DAL.Entities.Painting">
+    <Position X="6" Y="0.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>EEAABgAABQAgABAAKgIAAMQAAAAoAEAABAgAAARAAAA=</HashCode>
+      <FileName>Entities\Painting.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Painter" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="ExhibitionsService.DAL.Entities.PaintingLike">
+    <Position X="3.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAAAAAAAAAEAAAAAAQAAAAAAAAAAABAAAAAAgAA=</HashCode>
+      <FileName>Entities\PaintingLike.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Profile" />
+      <Property Name="Painting" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="ExhibitionsService.DAL.Entities.PaintingRating">
+    <Position X="3.5" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAAEAAAIAAAAAAAAAQAAAAQAAAAAAAgAAAgAgAA=</HashCode>
+      <FileName>Entities\PaintingRating.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="UserProfile" />
+      <Property Name="Painting" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="ExhibitionsService.DAL.Entities.Style">
+    <Position X="5.75" Y="6.75" Width="1.5" />
+    <AssociationLine Name="Paintings" Type="ExhibitionsService.DAL.Entities.Painting" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="6.438" Y="6.75" />
+        <Point X="6.438" Y="6.368" />
+        <Point X="6.25" Y="6.368" />
+        <Point X="6.25" Y="5.642" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="-0.617" Y="0.894" Height="0.182" Width="0.845" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAAAQAAAAAAAAAAAAAAAAQAAAAAAAAAAAAEAAAAAAAA=</HashCode>
+      <FileName>Entities\Style.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Paintings" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="ExhibitionsService.DAL.Entities.Tag">
+    <Position X="9.75" Y="6.75" Width="1.5" />
+    <AssociationLine Name="Paintings" Type="ExhibitionsService.DAL.Entities.Painting" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="10.375" Y="6.75" />
+        <Point X="10.375" Y="6.375" />
+        <Point X="7.75" Y="6.375" />
+        <Point X="7.75" Y="5.642" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="-2.603" Y="0.545" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <AssociationLine Name="Exhibitions" Type="ExhibitionsService.DAL.Entities.Exhibition" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="10.812" Y="6.75" />
+        <Point X="10.812" Y="5.498" />
+        <Point X="10.813" Y="5.498" />
+        <Point X="10.813" Y="2.955" />
+        <Point X="11.13" Y="2.955" />
+        <Point X="11.13" Y="1.821" />
+        <Point X="10.75" Y="1.821" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="0.356" Y="-4.899" Height="0.182" Width="0.92" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <AssociationLine Name="Contests" Type="ExhibitionsService.DAL.Entities.Contest">
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="-0.627" Y="-3.193" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAABAAAAAAAQAAAAAAAAAAAAAAAABACAE=</HashCode>
+      <FileName>Entities\Tag.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Paintings" />
+      <Property Name="Exhibitions" />
+      <Property Name="Contests" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="ExhibitionsService.DAL.Entities.User">
+    <Position X="0.5" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\User.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ExhibitionsService.DAL.Entities.UserProfile">
+    <Position X="0.5" Y="0.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAABAlAAAAAAAAAAIgAAAAgAAgAgAAAAAAAAAAAAgAg=</HashCode>
+      <FileName>Entities\UserProfile.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="User" />
+    </ShowAsAssociation>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

@@ -21,5 +21,22 @@ namespace ExhibitionsService.DAL.Repositories
         {
             return db.UserProfiles.Include(p => p.User).AsQueryable();
         }
+
+        public async Task DeleteRelatedInfo(int profileId)
+        {
+            var likes = await db.PaintingLikes.Where(pl => pl.ProfileId == profileId).ToListAsync();
+            db.PaintingLikes.RemoveRange(likes);
+
+            var votedApplications = await db.ContestApplications.Include(ca => ca.Voters).
+                Where(ca => ca.Voters.Any(v => v.ProfileId == profileId)).ToListAsync();
+            foreach( var application in votedApplications )
+            {
+                UserProfile? profile = application.Voters.FirstOrDefault(l => l.ProfileId == profileId);
+                if (profile != null) application.Voters.Remove(profile);
+            }
+
+            var ratings = await db.PaintingRatings.Where(pr => pr.ProfileId == profileId).ToListAsync();
+            db.PaintingRatings.RemoveRange(ratings);
+        }
     }
 }

@@ -53,7 +53,7 @@ namespace ExhibitionsService.DAL.Context
                         j => j.HasOne<ContestApplication>().WithMany().HasForeignKey("ApplicationId")
                             .OnDelete(DeleteBehavior.Cascade),
                         j => j.HasOne<UserProfile>().WithMany().HasForeignKey("ProfileId")
-                            .OnDelete(DeleteBehavior.NoAction)
+                            .OnDelete(DeleteBehavior.Restrict)
                     );
             });
 
@@ -116,7 +116,7 @@ namespace ExhibitionsService.DAL.Context
                             .HasOne(pl => pl.Profile)
                             .WithMany(p => p.PaintingLikes)
                             .HasForeignKey(pl => pl.ProfileId)
-                            .OnDelete(DeleteBehavior.NoAction),
+                            .OnDelete(DeleteBehavior.Restrict),
                         j => j
                             .HasOne(pl => pl.Painting)
                             .WithMany(p => p.PaintingLikes)
@@ -141,7 +141,7 @@ namespace ExhibitionsService.DAL.Context
                 builder.HasOne(r => r.UserProfile)
                     .WithMany(u => u.Ratings)
                     .HasForeignKey(r => r.ProfileId)
-                    .OnDelete(DeleteBehavior.NoAction);
+                    .OnDelete(DeleteBehavior.Restrict);
 
                 builder.HasOne(r => r.Painting)
                     .WithMany(u => u.Ratings)

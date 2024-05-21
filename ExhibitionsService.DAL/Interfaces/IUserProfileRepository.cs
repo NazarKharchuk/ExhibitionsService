@@ -6,5 +6,6 @@ namespace ExhibitionsService.DAL.Interfaces
     {
         Task<Tuple<User?, UserProfile?>> GetUserAndProfileByIdAsync(int profileId);
         Task<IQueryable<UserProfile>> GetAllProfilesWithUsersAsync();
+        Task DeleteRelatedInfo(int profileId);
     }
 }
