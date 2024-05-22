@@ -25,10 +25,15 @@ namespace ExhibitionsService.BLL.Services
             mapper = _mapper;
         }
 
-        public async Task<PaintingDTO> CreateAsync(PaintingDTO entity, IFormFile image)
+        public async Task<PaintingDTO> CreateAsync(PaintingDTO entity, IFormFile image, ClaimsPrincipal claims)
         {
             ValidateEntity(entity);
 
+            string? painterIdClaim = claims.FindFirst("PainterId")?.Value;
+            int? painterId = painterIdClaim != null ? int.Parse(painterIdClaim) : null;
+            if (painterId == null) throw new ValidationException("Користувач не є художником");
+            if (painterId != entity.PainterId)
+                throw new InsufficientPermissionsException("Додати картину може тільки її автор");
             if (await uow.Painters.GetByIdAsync(entity.PainterId) == null)
                 throw new ValidationException(entity.GetType().Name, nameof(entity.PainterId), "Художника з вказаним Id не існує");
 
@@ -43,9 +48,15 @@ namespace ExhibitionsService.BLL.Services
             return mapper.Map<PaintingDTO>(savedEntity);
         }
 
-        public async Task<PaintingDTO> UpdateAsync(PaintingDTO entity, IFormFile? image)
+        public async Task<PaintingDTO> UpdateAsync(PaintingDTO entity, IFormFile? image, ClaimsPrincipal claims)
         {
             var existingEntity = await CheckEntityPresence(entity.PaintingId);
+
+            string? painterIdClaim = claims.FindFirst("PainterId")?.Value;
+            int? painterId = painterIdClaim != null ? int.Parse(painterIdClaim) : null;
+            if (painterId == null) throw new ValidationException("Користувач не є художником");
+            if (painterId != existingEntity.PainterId)
+                throw new InsufficientPermissionsException("Редагувати картину може тільки її автор");
 
             ValidateEntity(entity);
 
@@ -79,9 +90,21 @@ namespace ExhibitionsService.BLL.Services
             return mapper.Map<PaintingDTO>(existingEntity);
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(int id, ClaimsPrincipal claims)
         {
             var existingEntity = await CheckEntityPresence(id);
+
+            var roles = claims.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+            if (!roles.Contains("Admin"))
+            {
+                string? painterIdClaim = claims.FindFirst("PainterId")?.Value;
+                int painterId = painterIdClaim != null ?
+                    int.Parse(painterIdClaim) :
+                    throw new ValidationException("Користувач не є художником чи адміном");
+
+                if (painterId != existingEntity.PainterId)
+                    throw new InsufficientPermissionsException("Видалити картину може її автор чи адміністратор");
+            }
 
             uow.Images.Delete(existingEntity.ImagePath);
 
@@ -101,9 +124,22 @@ namespace ExhibitionsService.BLL.Services
             return mapper.Map<List<PaintingDTO>>((await uow.Paintings.GetAllAsync()).ToList());
         }
 
-        public async Task AddGenreAsync(int paintingId, int genreId)
+        private void CheckPaintingAuthor(Painting painting, ClaimsPrincipal claims)
+        {
+            string? painterIdClaim = claims.FindFirst("PainterId")?.Value;
+            int painterId = painterIdClaim != null ?
+                int.Parse(painterIdClaim) :
+                throw new ValidationException("Користувач не є художником");
+
+            if (painterId != painting.PainterId)
+                throw new InsufficientPermissionsException("Змінити інформацію про картину може тільки її автор");
+        }
+
+        public async Task AddGenreAsync(int paintingId, int genreId, ClaimsPrincipal claims)
         {
             var painting = await CheckEntityPresence(paintingId);
+
+            CheckPaintingAuthor(painting, claims);
 
             Genre? genre = await uow.Genres.GetByIdAsync(genreId);
             if (genre == null) throw new EntityNotFoundException(typeof(GenreDTO).Name, genreId);
@@ -119,9 +155,11 @@ namespace ExhibitionsService.BLL.Services
             await uow.SaveAsync();
         }
 
-        public async Task RemoveGenreAsync(int paintingId, int genreId)
+        public async Task RemoveGenreAsync(int paintingId, int genreId, ClaimsPrincipal claims)
         {
             var painting = await CheckEntityPresence(paintingId);
+
+            CheckPaintingAuthor(painting, claims);
 
             Genre? genre = await uow.Genres.GetByIdAsync(genreId);
             if (genre == null) throw new EntityNotFoundException(typeof(GenreDTO).Name, genreId);
@@ -137,9 +175,11 @@ namespace ExhibitionsService.BLL.Services
             await uow.SaveAsync();
         }
 
-        public async Task AddStyleAsync(int paintingId, int styleId)
+        public async Task AddStyleAsync(int paintingId, int styleId, ClaimsPrincipal claims)
         {
             var painting = await CheckEntityPresence(paintingId);
+
+            CheckPaintingAuthor(painting, claims);
 
             Style? style = await uow.Styles.GetByIdAsync(styleId);
             if (style == null) throw new EntityNotFoundException(typeof(StyleDTO).Name, styleId);
@@ -155,9 +195,11 @@ namespace ExhibitionsService.BLL.Services
             await uow.SaveAsync();
         }
 
-        public async Task RemoveStyleAsync(int paintingId, int styleId)
+        public async Task RemoveStyleAsync(int paintingId, int styleId, ClaimsPrincipal claims)
         {
             var painting = await CheckEntityPresence(paintingId);
+
+            CheckPaintingAuthor(painting, claims);
 
             Style? style = await uow.Styles.GetByIdAsync(styleId);
             if (style == null) throw new EntityNotFoundException(typeof(StyleDTO).Name, styleId);
@@ -173,9 +215,11 @@ namespace ExhibitionsService.BLL.Services
             await uow.SaveAsync();
         }
 
-        public async Task AddMaterialAsync(int paintingId, int materialId)
+        public async Task AddMaterialAsync(int paintingId, int materialId, ClaimsPrincipal claims)
         {
             var painting = await CheckEntityPresence(paintingId);
+
+            CheckPaintingAuthor(painting, claims);
 
             Material? material = await uow.Materials.GetByIdAsync(materialId);
             if (material == null) throw new EntityNotFoundException(typeof(MaterialDTO).Name, materialId);
@@ -191,9 +235,11 @@ namespace ExhibitionsService.BLL.Services
             await uow.SaveAsync();
         }
 
-        public async Task RemoveMaterialAsync(int paintingId, int materialId)
+        public async Task RemoveMaterialAsync(int paintingId, int materialId, ClaimsPrincipal claims)
         {
             var painting = await CheckEntityPresence(paintingId);
+
+            CheckPaintingAuthor(painting, claims);
 
             Material? material = await uow.Materials.GetByIdAsync(materialId);
             if (material == null) throw new EntityNotFoundException(typeof(MaterialDTO).Name, materialId);
@@ -209,9 +255,11 @@ namespace ExhibitionsService.BLL.Services
             await uow.SaveAsync();
         }
 
-        public async Task AddTagAsync(int paintingId, int tagId)
+        public async Task AddTagAsync(int paintingId, int tagId, ClaimsPrincipal claims)
         {
             var painting = await CheckEntityPresence(paintingId);
+
+            CheckPaintingAuthor(painting, claims);
 
             Tag? tag = await uow.Tags.GetByIdAsync(tagId);
             if (tag == null) throw new EntityNotFoundException(typeof(TagDTO).Name, tagId);
@@ -227,9 +275,11 @@ namespace ExhibitionsService.BLL.Services
             await uow.SaveAsync();
         }
 
-        public async Task RemoveTagAsync(int paintingId, int tagId)
+        public async Task RemoveTagAsync(int paintingId, int tagId, ClaimsPrincipal claims)
         {
             var painting = await CheckEntityPresence(paintingId);
+
+            CheckPaintingAuthor(painting, claims);
 
             Tag? tag = await uow.Tags.GetByIdAsync(tagId);
             if (tag == null) throw new EntityNotFoundException(typeof(TagDTO).Name, tagId);
@@ -352,9 +402,14 @@ namespace ExhibitionsService.BLL.Services
             return Tuple.Create(res, count);
         }
 
-        public async Task AddLikeAsync(int paintingId, int profileId)
+        public async Task AddLikeAsync(int paintingId, ClaimsPrincipal claims)
         {
             var painting = await CheckEntityPresence(paintingId);
+
+            string? profileIdClaim = claims.FindFirst("ProfileId")?.Value;
+            int profileId = profileIdClaim != null ?
+                int.Parse(profileIdClaim) :
+                throw new ValidationException("Користувач не авторизований");
 
             UserProfile? profile = await uow.UserProfiles.GetByIdAsync(profileId);
             if (profile == null) throw new EntityNotFoundException(typeof(UserProfileDTO).Name, profileId);
@@ -377,9 +432,14 @@ namespace ExhibitionsService.BLL.Services
             await uow.SaveAsync();
         }
 
-        public async Task RemoveLikeAsync(int paintingId, int profileId)
+        public async Task RemoveLikeAsync(int paintingId, ClaimsPrincipal claims)
         {
             var painting = await CheckEntityPresence(paintingId);
+
+            string? profileIdClaim = claims.FindFirst("ProfileId")?.Value;
+            int profileId = profileIdClaim != null ?
+                int.Parse(profileIdClaim) :
+                throw new ValidationException("Користувач не авторизований");
 
             UserProfile? profile = await uow.UserProfiles.GetByIdAsync(profileId);
             if (profile == null) throw new EntityNotFoundException(typeof(PaintingDTO).Name, profileId);

@@ -9,6 +9,7 @@ using ExhibitionsService.DAL.Enums;
 using ExhibitionsService.DAL.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 
 namespace ExhibitionsService.BLL.Services
 {
@@ -25,9 +26,15 @@ namespace ExhibitionsService.BLL.Services
             mapper = _mapper;
         }
 
-        public async Task CreateAsync(PainterDTO entity)
+        public async Task CreateAsync(PainterDTO entity, ClaimsPrincipal claims)
         {
             await ValidateEntity(entity);
+
+            string? profileIdClaim = claims.FindFirst("ProfileId")?.Value;
+            int? profileId = profileIdClaim != null ? int.Parse(profileIdClaim) : null;
+            if (profileId == null) throw new ValidationException("Користувач не авторизований");
+            if (profileId != entity.ProfileId)
+                throw new InsufficientPermissionsException("Створити профіль художника може тільки його власник");
 
             if (await uow.UserProfiles.GetByIdAsync(entity.ProfileId) == null)
                 throw new ValidationException(entity.GetType().Name, nameof(entity.ProfileId), "Профіль користувача з вказаним Id не існує");
@@ -45,11 +52,17 @@ namespace ExhibitionsService.BLL.Services
             await profileService.AddRole(userEntities.Item2.ProfileId, Role.Painter);
         }
 
-        public async Task<PainterDTO> UpdateAsync(PainterDTO entity)
+        public async Task<PainterDTO> UpdateAsync(PainterDTO entity, ClaimsPrincipal claims)
         {
             await ValidateEntity(entity);
 
             var existingEntity = await CheckEntityPresence(entity.PainterId);
+
+            string? painterIdClaim = claims.FindFirst("PainterId")?.Value;
+            int? painterId = painterIdClaim != null ? int.Parse(painterIdClaim) : null;
+            if (painterId == null) throw new ValidationException("Користувач не є художником");
+            if (painterId != entity.PainterId)
+                throw new InsufficientPermissionsException("Редагувати профіль художника може тільки його власник");
 
             existingEntity.Description = entity.Description;
             existingEntity.Pseudonym = entity.Pseudonym;
@@ -60,9 +73,21 @@ namespace ExhibitionsService.BLL.Services
             return mapper.Map<PainterDTO>(existingEntity);
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(int id, ClaimsPrincipal claims)
         {
             var existingEntity = await CheckEntityPresence(id);
+
+            var roles = claims.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+            if (!roles.Contains("Admin"))
+            {
+                string? painterIdClaim = claims.FindFirst("PainterId")?.Value;
+                int painterId = painterIdClaim != null ?
+                    int.Parse(painterIdClaim) :
+                    throw new ValidationException("Користувач не є художником чи адміном");
+
+                if (painterId != id)
+                    throw new InsufficientPermissionsException("Видалити профіль художника може його власник чи адміністратор");
+            }
 
             await profileService.DeleteRole(existingEntity.ProfileId, Role.Painter);
 

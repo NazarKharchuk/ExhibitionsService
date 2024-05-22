@@ -26,7 +26,7 @@ namespace ExhibitionsService.BLL.Services
         {
             ValidateEntity(entity);
 
-            if (entity.StartDate < DateTime.Now)
+            if (entity.StartDate <= DateTime.Now)
                 throw new ValidationException(entity.GetType().Name, nameof(entity.StartDate));
 
             entity.ContestId = 0;
@@ -41,37 +41,38 @@ namespace ExhibitionsService.BLL.Services
             ValidateEntity(entity);
 
             var existingEntity = await CheckEntityPresence(entity.ContestId);
+            var dateTimeNow = DateTime.Now;
 
             if (entity.StartDate != existingEntity.StartDate &&
-                (existingEntity.StartDate < DateTime.Now || entity.StartDate < DateTime.Now))
+                (existingEntity.StartDate < dateTimeNow || entity.StartDate < dateTimeNow))
             {
                 throw new ValidationException(entity.GetType().Name, nameof(entity.StartDate));
             }
 
-            if (entity.EndDate != existingEntity.EndDate && existingEntity.EndDate < DateTime.Now)
+            if (entity.EndDate != existingEntity.EndDate && existingEntity.EndDate < dateTimeNow)
             {
                 throw new ValidationException(entity.GetType().Name, nameof(entity.EndDate));
             }
 
-            if (entity.NeedConfirmation != existingEntity.NeedConfirmation && entity.StartDate < DateTime.Now)
+            if (entity.NeedConfirmation != existingEntity.NeedConfirmation && entity.StartDate < dateTimeNow)
             {
                 throw new ValidationException(entity.GetType().Name, nameof(entity.NeedConfirmation));
             }
 
             if (entity.PainterLimit != existingEntity.PainterLimit &&
-                (existingEntity.PainterLimit > entity.PainterLimit || entity.StartDate < DateTime.Now))
+                (existingEntity.PainterLimit > entity.PainterLimit || entity.StartDate < dateTimeNow))
             {
                 throw new ValidationException(entity.GetType().Name, nameof(entity.PainterLimit));
             }
 
             if (entity.VotesLimit != existingEntity.VotesLimit &&
-                (existingEntity.VotesLimit > entity.VotesLimit || entity.EndDate < DateTime.Now))
+                (existingEntity.VotesLimit > entity.VotesLimit || entity.EndDate < dateTimeNow))
             {
                 throw new ValidationException(entity.GetType().Name, nameof(entity.VotesLimit));
             }
 
             if (entity.WinnersCount != existingEntity.WinnersCount &&
-                (existingEntity.WinnersCount > entity.WinnersCount || entity.EndDate < DateTime.Now))
+                (existingEntity.WinnersCount > entity.WinnersCount || entity.EndDate < dateTimeNow))
             {
                 throw new ValidationException(entity.GetType().Name, nameof(entity.WinnersCount));
             }
@@ -340,7 +341,7 @@ namespace ExhibitionsService.BLL.Services
             if (entity.Description.IsNullOrEmpty() || entity.Description.Length > 500)
                 throw new ValidationException(entity.GetType().Name, nameof(entity.Description));
 
-            if (entity.EndDate < entity.StartDate)
+            if (entity.EndDate <= entity.StartDate)
                 throw new ValidationException(entity.GetType().Name, nameof(entity.EndDate));
 
             if (entity.WinnersCount <= 0)

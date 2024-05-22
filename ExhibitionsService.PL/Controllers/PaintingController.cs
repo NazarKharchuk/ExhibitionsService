@@ -4,6 +4,7 @@ using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Interfaces;
 using ExhibitionsService.PL.Models.HelperModel;
 using ExhibitionsService.PL.Models.Painting;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExhibitionsService.PL.Controllers
@@ -48,108 +49,121 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("")]
         [HttpPost]
+        [Authorize(Roles = "Painter")]
         public async Task<IActionResult> PostPainting([FromForm] PaintingCreateModel entity)
         {
-            var savedModel = await paintingService.CreateAsync(mapper.Map<PaintingDTO>(entity), entity.Image);
+            var savedModel = await paintingService.CreateAsync(mapper.Map<PaintingDTO>(entity), entity.Image, HttpContext.User);
             return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(mapper.Map<PaintingModel>(savedModel)));
         }
 
         [Route("{id}")]
         [HttpPut]
+        [Authorize(Roles = "Painter")]
         public async Task<IActionResult> PutPainting(int id, [FromForm] PaintingUpdateModel entity)
         {
             if (id != entity.PaintingId)
                 throw new ArgumentException("Ідентифікатор, вказаний в URL, не відповідає ідентифікатору у тілі запиту.");
 
-            await paintingService.UpdateAsync(mapper.Map<PaintingDTO>(entity), entity.Image);
+            await paintingService.UpdateAsync(mapper.Map<PaintingDTO>(entity), entity.Image, HttpContext.User);
             return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
 
         [Route("{id}")]
         [HttpDelete]
+        [Authorize(Roles = "Painter, Admin")]
         public async Task<IActionResult> DeletePainting(int id)
         {
-            await paintingService.DeleteAsync(id);
+            await paintingService.DeleteAsync(id, HttpContext.User);
             return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
 
         [Route("{paintingId}/genres")]
         [HttpPost]
+        [Authorize(Roles = "Painter")]
         public async Task<IActionResult> AddGenre(int paintingId, [FromBody] int genreId)
         {
-            await paintingService.AddGenreAsync(paintingId, genreId);
+            await paintingService.AddGenreAsync(paintingId, genreId, HttpContext.User);
             return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
 
         [Route("{paintingId}/genres/{genreId}")]
         [HttpDelete]
+        [Authorize(Roles = "Painter")]
         public async Task<IActionResult> RemoveGenre(int paintingId, int genreId)
         {
-            await paintingService.RemoveGenreAsync(paintingId, genreId);
+            await paintingService.RemoveGenreAsync(paintingId, genreId, HttpContext.User);
             return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
 
         [Route("{paintingId}/styles")]
         [HttpPost]
+        [Authorize(Roles = "Painter")]
         public async Task<IActionResult> AddStyle(int paintingId, [FromBody] int styleId)
         {
-            await paintingService.AddStyleAsync(paintingId, styleId);
+            await paintingService.AddStyleAsync(paintingId, styleId, HttpContext.User);
             return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
 
         [Route("{paintingId}/styles/{styleId}")]
         [HttpDelete]
+        [Authorize(Roles = "Painter")]
         public async Task<IActionResult> RemoveStyle(int paintingId, int styleId)
         {
-            await paintingService.RemoveStyleAsync(paintingId, styleId);
+            await paintingService.RemoveStyleAsync(paintingId, styleId, HttpContext.User);
             return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
 
         [Route("{paintingId}/materials")]
         [HttpPost]
+        [Authorize(Roles = "Painter")]
         public async Task<IActionResult> AddMaterial(int paintingId, [FromBody] int materialId)
         {
-            await paintingService.AddMaterialAsync(paintingId, materialId);
+            await paintingService.AddMaterialAsync(paintingId, materialId, HttpContext.User);
             return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
 
         [Route("{paintingId}/materials/{materialId}")]
         [HttpDelete]
+        [Authorize(Roles = "Painter")]
         public async Task<IActionResult> RemoveMaterial(int paintingId, int materialId)
         {
-            await paintingService.RemoveMaterialAsync(paintingId, materialId);
+            await paintingService.RemoveMaterialAsync(paintingId, materialId, HttpContext.User);
             return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
 
         [Route("{paintingId}/tags")]
         [HttpPost]
+        [Authorize(Roles = "Painter")]
         public async Task<IActionResult> AddTag(int paintingId, [FromBody] int tagId)
         {
-            await paintingService.AddTagAsync(paintingId, tagId);
+            await paintingService.AddTagAsync(paintingId, tagId, HttpContext.User);
             return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
 
         [Route("{paintingId}/tags/{tagId}")]
         [HttpDelete]
+        [Authorize(Roles = "Painter")]
         public async Task<IActionResult> RemoveTag(int paintingId, int tagId)
         {
-            await paintingService.RemoveTagAsync(paintingId, tagId);
+            await paintingService.RemoveTagAsync(paintingId, tagId, HttpContext.User);
             return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
 
         [Route("{paintingId}/likes")]
         [HttpPost]
-        public async Task<IActionResult> AddLike(int paintingId, [FromBody] int profileId)
+        [Authorize]
+        public async Task<IActionResult> AddLike(int paintingId)
         {
-            await paintingService.AddLikeAsync(paintingId, profileId);
+            await paintingService.AddLikeAsync(paintingId, HttpContext.User);
             return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
 
-        [Route("{paintingId}/likes/{profileId}")]
+        [Route("{paintingId}/likes")]
         [HttpDelete]
-        public async Task<IActionResult> RemoveLike(int paintingId, int profileId)
+        [Authorize]
+        public async Task<IActionResult> RemoveLike(int paintingId)
         {
-            await paintingService.RemoveLikeAsync(paintingId, profileId);
+            await paintingService.RemoveLikeAsync(paintingId, HttpContext.User);
             return new ObjectResult(ResponseModel<PaintingModel>.CoverSuccessResponse(null));
         }
 

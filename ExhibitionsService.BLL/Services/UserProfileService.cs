@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Data;
+using System.Security.Claims;
 using System.Text.RegularExpressions;
 
 namespace ExhibitionsService.BLL.Services
@@ -53,9 +54,16 @@ namespace ExhibitionsService.BLL.Services
             }
         }
 
-        public async Task<UserProfileDTO> UpdateAsync(UserProfileDTO entity)
+        public async Task<UserProfileDTO> UpdateAsync(UserProfileDTO entity, ClaimsPrincipal claims)
         {
             ValidateEntity(entity);
+
+            string? profileIdClaim = claims.FindFirst("ProfileId")?.Value;
+            int profileId = profileIdClaim != null ?
+                int.Parse(profileIdClaim) :
+                throw new ValidationException("Користувач не авторизований");
+            if (profileId != entity.ProfileId)
+                throw new InsufficientPermissionsException("Редагувати профіль користувача може тільки його автор");
 
             var existingEntities = await CheckEntityPresence(entity.ProfileId);
 
@@ -75,8 +83,19 @@ namespace ExhibitionsService.BLL.Services
             };
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(int id, ClaimsPrincipal claims)
         {
+            var roles = claims.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+            if (!roles.Contains("Admin"))
+            {
+                string? profileIdClaim = claims.FindFirst("ProfileId")?.Value;
+                int profileId = profileIdClaim != null ? int.Parse(profileIdClaim) :
+                        throw new ValidationException("Користувач не авторизований чи не має ролі адміністратора");
+
+                if (profileId != id)
+                    throw new InsufficientPermissionsException("Видалити профіль користувача може тільки його власник чи адміністратор");
+            }
+
             var existingEntities = await CheckEntityPresence(id);
 
             using (var transaction = await uow.BeginTransactionAsync())
@@ -141,8 +160,19 @@ namespace ExhibitionsService.BLL.Services
             }
         }
 
-        public async Task<UserProfileDTO?> GetByIdAsync(int id)
+        public async Task<UserProfileDTO?> GetByIdAsync(int id, ClaimsPrincipal claims)
         {
+            var roles = claims.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+            if (!roles.Contains("Admin"))
+            {
+                string? profileIdClaim = claims.FindFirst("ProfileId")?.Value;
+                int profileId = profileIdClaim != null ? int.Parse(profileIdClaim) :
+                        throw new ValidationException("Користувач не авторизований чи не має ролі адміністратора");
+
+                if (profileId != id)
+                    throw new InsufficientPermissionsException("Переглянути профіль користувача може тільки його власник чи адміністратор");
+            }
+
             var existingEntities = await CheckEntityPresence(id);
 
             return new UserProfileDTO()

@@ -2,9 +2,9 @@
 using ExhibitionsService.BLL.DTO;
 using ExhibitionsService.BLL.DTO.HelperDTO;
 using ExhibitionsService.BLL.Interfaces;
-using ExhibitionsService.BLL.Services;
 using ExhibitionsService.PL.Models.HelperModel;
 using ExhibitionsService.PL.Models.Painter;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExhibitionsService.PL.Controllers
@@ -47,28 +47,31 @@ namespace ExhibitionsService.PL.Controllers
 
         [Route("")]
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> PostPainter([FromBody] PainterCreateModel entity)
         {
-            await painterService.CreateAsync(mapper.Map<PainterDTO>(entity));
+            await painterService.CreateAsync(mapper.Map<PainterDTO>(entity), HttpContext.User);
             return new ObjectResult(ResponseModel<PainterModel>.CoverSuccessResponse(null));
         }
 
         [Route("{id}")]
         [HttpPut]
+        [Authorize(Roles = "Painter")]
         public async Task<IActionResult> PutPainter(int id, [FromBody] PainterUpdateModel entity)
         {
             if(id != entity.PainterId)
                 throw new ArgumentException("Ідентифікатор, вказаний в URL, не відповідає ідентифікатору у тілі запиту.");
 
-            await painterService.UpdateAsync(mapper.Map<PainterDTO>(entity));
+            await painterService.UpdateAsync(mapper.Map<PainterDTO>(entity), HttpContext.User);
             return new ObjectResult(ResponseModel<PainterModel>.CoverSuccessResponse(null));
         }
 
         [Route("{id}")]
         [HttpDelete]
+        [Authorize(Roles = "Painter, Admin")]
         public async Task<IActionResult> DeletePainter(int id)
         {
-            await painterService.DeleteAsync(id);
+            await painterService.DeleteAsync(id, HttpContext.User);
             return new ObjectResult(ResponseModel<PainterModel>.CoverSuccessResponse(null));
         }
 
